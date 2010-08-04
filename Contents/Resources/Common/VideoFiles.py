@@ -147,17 +147,18 @@ def Scan(path, files, mediaList, subdirs):
   for i in filesToRemove:
     files.remove(i)
       
-  # Check directories.
-  whack = []
-  for dir in subdirs:
-    baseDir = os.path.basename(dir)
-    for rx in ignore_dirs:
-      if re.match(rx, baseDir, re.IGNORECASE):
-        whack.append(dir)
-        break
+  # Check directories, but not at the top-level.
+  if len(path) > 0:
+    whack = []
+    for dir in subdirs:
+      baseDir = os.path.basename(dir)
+      for rx in ignore_dirs:
+        if re.match(rx, baseDir, re.IGNORECASE):
+          whack.append(dir)
+          break
   
-  for w in whack:
-    subdirs.remove(w)
+    for w in whack:
+      subdirs.remove(w)
       
 def RetrieveSource(name):
   name = os.path.basename(name)
