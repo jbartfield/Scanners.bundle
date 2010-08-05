@@ -93,6 +93,13 @@ def CleanName(name):
   
   for i in range(len(tokenBitmap)):
     good = tokenBitmap[i]
+    
+    # If we've only got one or two tokens, don't whack any, they might be part of
+    # the actual name (e.g. "Internal Affairs" "XXX 2")
+    #
+    if len(tokenBitmap) <= 2:
+      good = True
+    
     if good and numBad < 2:
       if newTokens[i] == '*yearBreak*':
         #if we have a year, we can ignore everything after this.
