@@ -3,6 +3,7 @@
 #
 import re, os, os.path
 import Media, VideoFiles, Stack
+from mp4file import mp4file, atomsearch
 
 episode_regexps = [
     '(.*?)[sS](?P<season>[0-9]+)[\._ ]*[eE](?P<ep>[0-9]+)([- ]?[Ee+](?P<secondEp>[0-9]+))?',                           # S03E04-E05
@@ -40,9 +41,10 @@ def Scan(path, files, mediaList, subdirs):
   
   # Take top two as show/season, but require at least the top one.
   paths = path.split('/')
+  
   if len(paths) > 0 and len(paths[0]) > 0:
     done = False
-    
+        
     # See if parent directory is a perfect match (e.g. a directory like "24 - 8x02 - Day 8_ 5_00P.M. - 6_00P.M")
     if len(files) == 1:
       for rx in standalone_episode_regexs:
@@ -90,6 +92,21 @@ def Scan(path, files, mediaList, subdirs):
         done = False
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
+        
+        if ext == '.m4v':
+          mp4fileTags = mp4file.Mp4File(i)
+          show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
+          season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
+          ep =  int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+          title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
+          year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
+          #print find_data(mp4fileTags, 'moov/udta/meta/ilst/description')
+          print 'show=%s, season=%s, ep=%s, title=%s, year=%s' % (show, season, ep, title, year)
+          if len(show) > 0 and season > 0 and ep > 0:
+            tv_show = Media.Episode(str(show), season, ep, str(title), year)
+            tv_show.parts.append(i)
+            mediaList.append(tv_show)
+            continue
         
         # Check for date-based regexps first.
         for rx in date_regexps:
@@ -155,7 +172,6 @@ def Scan(path, files, mediaList, subdirs):
               break
               
         if done == False:
-          
           # OK, next let's see if we're dealing with something that looks like an episode.
           # Begin by cleaning the filename to remove garbage like "h.264" that could throw
           # things off.
@@ -184,6 +200,11 @@ def Scan(path, files, mediaList, subdirs):
           
         if done == False:
           print "Got nothing for:", file
-     
   # Stack the results.
   Stack.Scan(path, files, mediaList, subdirs)
+  
+def find_data(atom, name):
+  child = atomsearch.find_path(atom, name)
+  data_atom = child.find('data')
+  if data_atom and 'data' in data_atom.attrs:
+    return data_atom.attrs['data']
