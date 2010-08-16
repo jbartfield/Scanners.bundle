@@ -95,13 +95,18 @@ def Scan(path, files, mediaList, subdirs):
         
         if ext == '.m4v':
           mp4fileTags = mp4file.Mp4File(i)
-          show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
-          season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
-          ep =  int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
-          title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
-          year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
+          try: show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
+          except: pass
+          try: season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
+          except: pass
+          try: ep =  int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+          except: pass
+          try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
+          except: pass
+          try: year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
+          except: pass
           #print find_data(mp4fileTags, 'moov/udta/meta/ilst/description')
-          print 'show=%s, season=%s, ep=%s, title=%s, year=%s' % (show, season, ep, title, year)
+          #print 'show=%s, season=%s, ep=%s, title=%s, year=%s' % (show, season, ep, title, year)
           if len(show) > 0 and season > 0 and ep > 0:
             tv_show = Media.Episode(str(show), season, ep, str(title), year)
             tv_show.parts.append(i)
