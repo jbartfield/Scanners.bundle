@@ -93,7 +93,7 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
-        if False and ext == '.m4v':
+        if ext == '.m4v':
           m4season = m4ep = m4year = 0
           m4show = title = ''
           mp4fileTags = mp4file.Mp4File(i)
@@ -101,7 +101,7 @@ def Scan(path, files, mediaList, subdirs):
           except: pass
           try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
           except: pass
-          try: m4ep =  int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+          try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
           except: pass
           try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
           except: pass
@@ -207,6 +207,7 @@ def Scan(path, files, mediaList, subdirs):
           
         if done == False:
           print "Got nothing for:", file
+          
   # Stack the results.
   Stack.Scan(path, files, mediaList, subdirs)
   
@@ -215,3 +216,13 @@ def find_data(atom, name):
   data_atom = child.find('data')
   if data_atom and 'data' in data_atom.attrs:
     return data_atom.attrs['data']
+
+import sys
+    
+if __name__ == '__main__':
+  print "Hello, world!"
+  path = sys.argv[1]
+  files = [os.path.join(path, file) for file in os.listdir(path)]
+  media = []
+  Scan(path[1:], files, media, [])
+  print "Media:", media

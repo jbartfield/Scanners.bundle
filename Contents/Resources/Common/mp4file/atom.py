@@ -121,6 +121,9 @@ def parse_atoms(file, maxFileOffset):
     while file.tell() < maxFileOffset:
         atom = parse_atom(file)
         atoms.append(atom)
+        
+        if atom.size == 0:
+          break
 
         # Seek to the end of the atom
         file.seek(atom.offset + atom.size, os.SEEK_SET)
