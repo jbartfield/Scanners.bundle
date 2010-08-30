@@ -33,6 +33,8 @@ just_episode_regexs = [
 
 ends_with_number = '.*([0-9]{1,2})$'
 
+ends_with_episode = ['[ ]*[0-9]{1,2}x[0-9]{1,3}$', '[ ]*S[0-9]+E[0-9]+$']
+
 # Look for episodes.
 def Scan(path, files, mediaList, subdirs):
   
@@ -87,6 +89,10 @@ def Scan(path, files, mediaList, subdirs):
 
       oldShow = show
       (show, year) = VideoFiles.CleanName(show)
+
+      # Make sure an episode name didn't make it into the show.
+      for rx in ends_with_episode:
+        show = re.sub(rx, '', show)
 
       for i in files:
         done = False
