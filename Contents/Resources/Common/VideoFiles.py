@@ -23,6 +23,7 @@ misc = ['2cd','custom','internal','repack','read.nfo','readnfo','nfofix','proper
 format = ['ac3','dc','divx','fragment','limited','ogg','ogm','ntsc','pal','ps3avchd','r1','r3','r5','720i','720p','1080i','1080p','x264','xvid','vorbis','aac','dts','fs','ws','1920x1080','1280x720','h264']
 edition = ['dc','se'] # dc = directors cut, se = special edition
 yearRx = '([\(\[\.\-])([1-2][0-9]{3})([\.\-\)\]])'
+episodeRx = ['[0-9]{1,2}x[0-9]{1,3}', 'S[0-9]+E[0-9]+']
 
 # Cleanup folder / filenames
 def CleanName(name):
@@ -113,6 +114,12 @@ def CleanName(name):
       numGood += 1
     else:
       numBad += 1
+  
+  # Make sure an episode name didn't make it in here.
+  for rx in episodeRx:
+    if re.match(rx, finalTokens[-1], re.IGNORECASE):
+      finalTokens = finalTokens[:-1]
+      break
       
   #print "CLEANED [%s] => [%s]" % (orig, u' '.join(finalTokens))
   #print "TOKENS: ", newTokens
