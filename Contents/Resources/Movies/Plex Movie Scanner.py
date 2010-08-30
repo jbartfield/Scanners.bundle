@@ -2,7 +2,7 @@
 # Copyright (c) 2010 Plex Development Team. All rights reserved.
 #
 import re, os, os.path
-import Media, VideoFiles, Stack, VideoSidecars
+import Media, VideoFiles, Stack
 SeriesScanner = __import__('Plex Series Scanner')
 
 nice_match = '(.+) [\(\[]([1-2][0-9]{3})[\)\]]'
@@ -109,9 +109,6 @@ def Scan(path, files, mediaList, subdirs):
       if mediaList[0].source is None:
         mediaList[0].source = VideoFiles.RetrieveSource(path)
          
-  # Find sibling files (subtitles, thumbs, etc.)
-  VideoSidecars.Scan(path, files, mediaList, subdirs)
-  
   # If the subdirectories indicate that we're inside a DVD, when whack things other than audio and video.
   whack = []
   if 'video_ts' in [s.split('/')[-1].lower() for s in subdirs]:
