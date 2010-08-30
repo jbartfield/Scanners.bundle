@@ -116,10 +116,11 @@ def CleanName(name):
       numBad += 1
   
   # Make sure an episode name didn't make it in here.
-  for rx in episodeRx:
-    if re.match(rx, finalTokens[-1], re.IGNORECASE):
-      finalTokens = finalTokens[:-1]
-      break
+  if len(finalTokens) >= 2:
+    for rx in episodeRx:
+      if re.match(rx, finalTokens[-1], re.IGNORECASE):
+        finalTokens = finalTokens[:-1]
+        break
       
   #print "CLEANED [%s] => [%s]" % (orig, u' '.join(finalTokens))
   #print "TOKENS: ", newTokens
