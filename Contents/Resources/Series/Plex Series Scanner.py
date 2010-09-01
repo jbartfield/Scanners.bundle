@@ -102,19 +102,21 @@ def Scan(path, files, mediaList, subdirs):
         if ext == '.m4v':
           m4season = m4ep = m4year = 0
           m4show = title = ''
-          mp4fileTags = mp4file.Mp4File(i)
-          try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
-          except: pass
-          try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
-          except: pass
-          try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
-          except: pass
-          try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
-          except: pass
-          try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
-          except: pass
-          #print find_data(mp4fileTags, 'moov/udta/meta/ilst/description')
-          #print 'show=%s, season=%s, ep=%s, title=%s, year=%s' % (show, season, ep, title, year)
+          try: 
+            mp4fileTags = mp4file.Mp4File(i)
+            try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
+            except: pass
+            try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
+            except: pass
+            try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+            except: pass
+            try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
+            except: pass
+            try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
+            except: pass
+          except: 
+            print "Exception parsing M4V file."
+
           if len(m4show) > 0 and m4season > 0 and m4ep > 0:
             tv_show = Media.Episode(str(m4show), m4season, m4ep, str(title), m4year)
             tv_show.parts.append(i)
