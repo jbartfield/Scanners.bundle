@@ -33,9 +33,7 @@ def Scan(dir, files, mediaList, subdirs):
             #prefix = f1[:i1] + f1[i2:]
             #(root, ext) = os.path.splitext(prefix)
             if root[-1:] == '0': #fix cases where it is something like part 01 ... part 02 -- remove that 0, so the suffix check works later
-              print "****found 0"
               root = root[:-1]
-              print "new root: " + root
             if not root.lower().strip().endswith('vol') and not root.lower().strip().endswith('volume'): #this is a special case for folders with multiple Volumes of a series (not a stacked movie) [e.g, Kill Bill Vol 1 / 2]
               # Strip any suffixes like CD, DVD.
               foundSuffix = False
