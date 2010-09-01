@@ -205,4 +205,4 @@ class data(Atom):
         # consume extra null?
         read32(self.file)
         howMuch = self.size - 16
-        return unicode(self.file.read(howMuch), "utf-8")
+        return unicode(self.file.read(howMuch), "utf-8", errors='ignore')
