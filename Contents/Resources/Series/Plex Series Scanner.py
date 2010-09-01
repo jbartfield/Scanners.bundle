@@ -131,12 +131,8 @@ def Scan(path, files, mediaList, subdirs):
             month = int(match.group('month'))
             day = int(match.group('day'))
 
-            # Use the year if there is no season.
-            theSeason = season
-            if theSeason is None:
-              theSeason = year
-
-            tv_show = Media.Episode(show, theSeason, None, None, None)
+            # Use the year as the season.
+            tv_show = Media.Episode(show, year, None, None, None)
             tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
             tv_show.parts.append(i)
             mediaList.append(tv_show)
