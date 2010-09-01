@@ -6,7 +6,7 @@ video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'divx', '
               'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'xsp', 'xvid']
 
 ignore_files = ['[-\._ ]sample', 'sample[-\._ ]', '-trailer\.']
-ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*', 'extras?']
+ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*', 'extras?', '\.AppleDouble']
 
 source_dict = {'bluray':['bdrc','bdrip','bluray','bd','brrip','hdrip','hddvd','hddvdrip'],'cam':['cam'],'dvd':['ddc','dvdrip','dvd','r1','r3'],'retail':['retail'],
                'dtv':['dsr','dsrip','hdtv','pdtv','ppv'],'stv':['stv','tvrip'],'r5':['r5'],'screener':['bdscr','dvdscr','dvdscreener','scr','screener'],
