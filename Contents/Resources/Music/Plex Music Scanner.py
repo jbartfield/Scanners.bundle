@@ -25,7 +25,7 @@ def Scan(path, files, mediaList, subdirs):
     return
 
   # Looks like an album
-  if len(path) > 1 and len(path[0]) > 0 and 2 < len(files) < 50:
+  if len(path) > 1 and len(path[0]) > 0 and 0 < len(files) < 50:
     try:
       (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(files[0])
       (LArtist, LAlbum, LTitle, LTrack, LDisk, LTPE2) = getInfoFromTag(files[-1])
