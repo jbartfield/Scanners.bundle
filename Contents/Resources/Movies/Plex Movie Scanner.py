@@ -134,24 +134,24 @@ def ContainsFile(files, file):
   return None
 
 def checkNfoFile(path):
-  #print "nfo lookup path = " + path
-  nfoFile=''
-  if os.path.exists(path):
-    for f in os.listdir(path):
-      if f.split(".")[-1].lower() == "nfo":
-        #print 'found nfo for path: ' + path
-        nfoFile = os.path.join(path, f)
-        t = open(nfoFile)
-        nfoText = t.read()
-        #print nfoText 
-        if nfoText.find('imdb.com') > 0: #imdb.com url, it feels like
-          nfoText = nfoText[nfoText.find('imdb.com'):]
-          if nfoText.find('/tt') > 0 and nfoText.find('/tt') < 20: #we have a tt url!
-            nfoText = nfoText[nfoText.find('/tt'):]
-            id = "tt"
-            for c in nfoText[3:]:
-              try:
-                id += str(int(c))
-              except:
-                break
-            return id  
+  try:
+    nfoFile=''
+    if os.path.exists(path):
+      for f in os.listdir(path):
+        if f.split(".")[-1].lower() == "nfo":
+          nfoFile = os.path.join(path, f)
+          t = open(nfoFile)
+          nfoText = t.read()
+          if nfoText.find('imdb.com') > 0: #imdb.com url, it feels like
+            nfoText = nfoText[nfoText.find('imdb.com'):]
+            if nfoText.find('/tt') > 0 and nfoText.find('/tt') < 20: #we have a tt url!
+              nfoText = nfoText[nfoText.find('/tt'):]
+              id = "tt"
+              for c in nfoText[3:]:
+                try:
+                  id += str(int(c))
+                except:
+                  break
+              return id
+  except:
+    print "Warning, couldn't read NFO file."
