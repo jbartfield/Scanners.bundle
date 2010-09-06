@@ -53,6 +53,11 @@ def Scan(path, files, mediaList, subdirs):
         res = re.findall(rx, paths[-1])
         if len(res):
           show, junk, year, season, episode, junk, endEpisode, junk, title = res[0]
+          
+          # If it didn't have a show, then grab it from the directory.
+          if len(show) == 0:
+            (show, year) = VideoFiles.CleanName(paths[0])
+            
           episode = int(episode)
           if len(endEpisode) > 0:
             endEpisode = int(endEpisode)
