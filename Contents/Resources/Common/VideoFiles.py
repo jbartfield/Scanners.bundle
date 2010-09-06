@@ -1,12 +1,12 @@
 #!/usr/bin/python2.4
 import os.path, re, datetime, titlecase, unicodedata
 
-video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv', 'ifo', 'img', 
+video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv', 'ifo', 'img', 
               'iso', 'm2t', 'm2ts', 'm2v', 'm4v', 'mkv', 'mov', 'mp4', 'mpeg', 'mpg', 'mts', 'nrg', 'nsv', 'nuv', 'ogm', 'ogv', 
               'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'xsp', 'xvid']
 
 ignore_files = ['[-\._ ]sample', 'sample[-\._ ]', '-trailer\.']
-ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*', 'extras?', '\.AppleDouble', '@eaDir']
+ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*', '\.AppleDouble', '@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*']
 
 source_dict = {'bluray':['bdrc','bdrip','bluray','bd','brrip','hdrip','hddvd','hddvdrip'],'cam':['cam'],'dvd':['ddc','dvdrip','dvd','r1','r3'],'retail':['retail'],
                'dtv':['dsr','dsrip','hdtv','pdtv','ppv'],'stv':['stv','tvrip'],'r5':['r5'],'screener':['bdscr','dvdscr','dvdscreener','scr','screener'],
