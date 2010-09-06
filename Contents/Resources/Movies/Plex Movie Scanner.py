@@ -17,6 +17,9 @@ def Scan(path, files, mediaList, subdirs):
   # Check for DVD rips.
   paths = path.split('/')
   video_ts = ContainsFile(files, 'video_ts.ifo')
+  if video_ts is None:
+    video_ts = ContainsFile(files, 'video_ts.bup')
+    
   if len(paths) >= 1 and len(paths[0]) > 0 and video_ts is not None:
     print "Found a DVD"
     name = year = None
