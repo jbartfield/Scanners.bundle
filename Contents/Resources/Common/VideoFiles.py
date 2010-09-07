@@ -6,7 +6,8 @@ video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'bup', 'd
               'pva', 'qt', 'rm', 'rmvb', 'sdp', 'svq3', 'strm', 'ts', 'ty', 'vdr', 'viv', 'vob', 'vp3', 'wmv', 'wpl', 'xsp', 'xvid']
 
 ignore_files = ['[-\._ ]sample', 'sample[-\._ ]', '-trailer\.']
-ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*', '\.AppleDouble', '@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*']
+ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*']
+ignore_dirs_global = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\.AppleDouble']
 
 source_dict = {'bluray':['bdrc','bdrip','bluray','bd','brrip','hdrip','hddvd','hddvdrip'],'cam':['cam'],'dvd':['ddc','dvdrip','dvd','r1','r3'],'retail':['retail'],
                'dtv':['dsr','dsrip','hdtv','pdtv','ppv'],'stv':['stv','tvrip'],'r5':['r5'],'screener':['bdscr','dvdscr','dvdscreener','scr','screener'],
@@ -155,17 +156,20 @@ def Scan(path, files, mediaList, subdirs):
     files.remove(i)
       
   # Check directories, but not at the top-level.
+  ignore_dirs_total = ignore_dirs_global
   if len(path) > 0:
-    whack = []
-    for dir in subdirs:
-      baseDir = os.path.basename(dir)
-      for rx in ignore_dirs:
-        if re.match(rx, baseDir, re.IGNORECASE):
-          whack.append(dir)
-          break
+    ignore_dirs_total += ignore_dirs
   
-    for w in whack:
-      subdirs.remove(w)
+  whack = []
+  for dir in subdirs:
+    baseDir = os.path.basename(dir)
+    for rx in ignore_dirs_total:
+      if re.match(rx, baseDir, re.IGNORECASE):
+        whack.append(dir)
+        break
+  
+  for w in whack:
+    subdirs.remove(w)
       
 def RetrieveSource(name):
   name = os.path.basename(name)
