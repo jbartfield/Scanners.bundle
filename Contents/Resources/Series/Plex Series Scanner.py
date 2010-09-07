@@ -109,24 +109,26 @@ def Scan(path, files, mediaList, subdirs):
           m4show = title = ''
           try: 
             mp4fileTags = mp4file.Mp4File(i)
-            try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow')
+            try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow').encode('utf-8')
             except: pass
             try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
             except: pass
             try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
             except: pass
-            try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title')
+            try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title').encode('utf-8')
             except: pass
             try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
             except: pass
-          except: 
-            print "Exception parsing M4V file."
 
-          if len(m4show) > 0 and m4season > 0 and m4ep > 0:
-            tv_show = Media.Episode(str(m4show), m4season, m4ep, str(title), m4year)
-            tv_show.parts.append(i)
-            mediaList.append(tv_show)
-            continue
+            # If we have all the data we need, add it.
+            if len(m4show) > 0 and m4season > 0 and m4ep > 0:
+              tv_show = Media.Episode(m4show, m4season, m4ep, title, m4year)
+              tv_show.parts.append(i)
+              mediaList.append(tv_show)
+              continue
+
+          except: 
+            pass
         
         # Check for date-based regexps first.
         for rx in date_regexps:
