@@ -151,8 +151,8 @@ def Scan(path, files, mediaList, subdirs):
           for rx in episode_regexps:
             
             # We're only going to run the weak one (.603.) if we have a season folder.
-            if rx == episode_regexps[-1] and len(paths) == 1:
-              continue
+            #if rx == episode_regexps[-1] and len(paths) == 1:
+            #  continue
 
             match = re.search(rx, file, re.IGNORECASE)
             if match:
