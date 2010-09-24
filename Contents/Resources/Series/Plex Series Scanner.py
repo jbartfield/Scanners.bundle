@@ -148,6 +148,12 @@ def Scan(path, files, mediaList, subdirs):
             break
         
         if done == False:
+          
+          # Minor cleaning on the file to avoid false matches on H.264, 720p, etc.
+          whackRx = ['([hHx][\.]?264)[^0-9]', '[^[0-9](720[pP])', '[^[0-9](1080[pP])', '[^[0-9](480[pP])']
+          for rx in whackRx:
+            file = re.sub(rx, ' ', file)
+          
           for rx in episode_regexps:
             
             # We're only going to run the weak one (.603.) if we have a season folder.
