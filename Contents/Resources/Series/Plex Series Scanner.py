@@ -176,6 +176,11 @@ def Scan(path, files, mediaList, subdirs):
                 if re.match('.+ \([1-2][0-9]{3}\)', paths[-1]):
                   done = True
                   break
+                  
+                # Skip season 19 and 20 for the weak regex because it ends up matching movie years.
+                if the_season == 19 or the_season == 20:
+                  done = True
+                  break
                 
                 # Make sure this isn't absolute order.
                 if seasonNumber is not None:
