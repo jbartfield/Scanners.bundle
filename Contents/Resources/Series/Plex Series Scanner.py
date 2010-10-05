@@ -104,7 +104,7 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
-        if ext == '.m4v':
+        if ext.lower() in ['.mp4', '.m4v']:
           m4season = m4ep = m4year = 0
           m4show = title = ''
           try: 
