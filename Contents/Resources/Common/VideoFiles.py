@@ -55,7 +55,7 @@ def CleanName(name):
   name = name + ' '
   for s in audio:
     rx = re.compile(s, re.IGNORECASE)
-    name = rx.sub('', name)
+    name = rx.sub(' ', name)
   
   # Now tokenize.
   tokens = re.split('([^ \-_\.\(\)]+)', name)
