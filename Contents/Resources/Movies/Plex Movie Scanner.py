@@ -74,7 +74,7 @@ def Scan(path, files, mediaList, subdirs):
     for i in files:
       file = os.path.basename(i)
       (name, year) = VideoFiles.CleanName(os.path.splitext(file)[0])
-            
+      
       # If it matches a TV show, don't scan it as a movie.
       tv = False
       for rx in SeriesScanner.episode_regexps[0:-1]:

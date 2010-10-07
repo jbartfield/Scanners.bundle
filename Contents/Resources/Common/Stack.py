@@ -1,4 +1,4 @@
-import Media
+import Media, VideoFiles
 import os.path, difflib
           
 def compareFilenames(elem):
@@ -51,7 +51,9 @@ def Scan(dir, files, mediaList, subdirs):
                   break
               
               if foundSuffix or xOfy:
-                mediaItem.name = root
+                # Replace the name, which probably had the suffix.
+                (name, year) = VideoFiles.CleanName(root)
+                mediaItem.name = name
                 if stack_dict.has_key(root):
                   stack_dict[root].append(m2)
                 else:
