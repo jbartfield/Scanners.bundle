@@ -5,6 +5,7 @@ def compareFilenames(elem):
   return elem.parts[0]
 
 def Scan(dir, files, mediaList, subdirs):
+  
   # Go through the files and see if any of them need to be stacked.
   stack_dict = {}
   stackDiffs = '1234abcd' # These are the characters we are looking for being different across stackable filenames
@@ -20,6 +21,7 @@ def Scan(dir, files, mediaList, subdirs):
     m2 = mediaList[count + 1]
     f1 = os.path.basename(m1.parts[0])
     f2 = os.path.basename(m2.parts[0])
+    
     opcodes = difflib.SequenceMatcher(None, f1, f2).get_opcodes()
     if len(opcodes) == 3: # We only have one transform
       (tag, i1, i2, j1, j2) = opcodes[1]
@@ -32,9 +34,14 @@ def Scan(dir, files, mediaList, subdirs):
               xOfy = True
             #prefix = f1[:i1] + f1[i2:]
             #(root, ext) = os.path.splitext(prefix)
-            if root[-1:] == '0': #fix cases where it is something like part 01 ... part 02 -- remove that 0, so the suffix check works later
+            
+            # Fix cases where it is something like part 01 ... part 02 -- remove that 0, so the suffix check works later
+            if root[-1:] == '0': 
               root = root[:-1]
-            if not root.lower().strip().endswith('vol') and not root.lower().strip().endswith('volume'): #this is a special case for folders with multiple Volumes of a series (not a stacked movie) [e.g, Kill Bill Vol 1 / 2]
+              
+            # This is a special case for folders with multiple Volumes of a series (not a stacked movie) [e.g, Kill Bill Vol 1 / 2]
+            if not root.lower().strip().endswith('vol') and not root.lower().strip().endswith('volume'): 
+              
               # Strip any suffixes like CD, DVD.
               foundSuffix = False
               for suffix in stackSuffixes:
@@ -51,7 +58,7 @@ def Scan(dir, files, mediaList, subdirs):
                   stack_dict[root] = [m1]
                   stack_dict[root].append(m2)
     count += 1
-            
+  
   # Now combine stacked parts
   for stack in stack_dict.keys():
     for media in stack_dict[stack][1:]:
