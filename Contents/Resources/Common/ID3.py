@@ -104,6 +104,11 @@ def lengthen(string, num_spaces):
 
 # We would normally use string.rstrip(), but that doesn't remove \0 characters.
 def strip_padding(s):
+    try:
+      s = s.decode('iso-8859-1').encode('utf-8')
+    except:
+      pass
+  
     while len(s) > 0 and s[-1] in (string.whitespace + "\0"):
         s = s[:-1]
 

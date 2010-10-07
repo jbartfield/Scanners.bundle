@@ -47,37 +47,6 @@ def Scan(path, files, mediaList, subdirs):
         appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2)
         return
 
-  # Can't get rid of the next part outright because at the moment it is the only
-  # way an album with a good directory structure will ever be added if it doesn't
-  # have a file extension that has tags we currently support
-  
-  # TWEAK: We'll pass on these for now because they could have evil naming. 
-  # The philosophy is (for now, at least): Add what we know is good, ignore 
-  # what's not.
-  #
-    
-  # Artist / Album.
-  #if len(paths) == 2 and len(subdirs) == 0:
-  #  first = getInfoFromTag(files[0])
-  #  if first == None or first[0].lower() == paths[0].lower():
-  #    TPE2 = None
-  #   if "Various Artists" in path:
-  #      TPE2 = "Various Artists"
-  #    appendAlbum(mediaList, files, paths[0], paths[1], TPE2=TPE2)
-  #    return
-
-
-  # This seems like a decent compromise.  I have a bunch of songs that are just one
-  # song off of an album that won't get picked up without something like this
-
-  # TWEAK: We don't want to take standalone files for now, just well-defined albums.
-
-  #if len(files) < 3:
-  #  for f in files:
-  #    appendTrackFromTag(mediaList, f)
-  #  return
-
-
 def getTitleTrack(filename):
   """
   = [title, track] for the song at filename by using the regexs in trackRxs.
