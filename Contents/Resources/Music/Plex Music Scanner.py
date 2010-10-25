@@ -4,12 +4,13 @@
 import re, os, os.path
 import Media, AudioFiles
 import ID3, ID3v2, M4ATags
+import unicodedata
 
 # 01 - Track.mp3
-trackRx1 = '([0-9]{2})[-. ]*(.*)\.[a-z0-9]{3,4}'
+trackRx1 = '([0-9]{2})[-. _]*(.*)\.[a-z0-9]{3,4}'
 
 # Artist - 01 - Track.mp3
-trackRx2 = '.*[-. ]+([0-9]{2})[-\. ]+(.+)\.[a-z0-9]{3,4}'
+trackRx2 = '.*[-. _]+([0-9]{2})[-\. ]+(.+)\.[a-z0-9]{3,4}'
 
 # 01 - Artist - Track.mp3 ALSO CHECKED IN getTitleTrack
 
@@ -35,6 +36,8 @@ def Scan(path, files, mediaList, subdirs):
 
     #           Check artist                               Check album
     if FArtist.lower() == LArtist.lower() and FAlbum.lower() == FAlbum.lower() and len(FArtist) > 0 and len(FAlbum) > 0:
+      
+      # Add the first and last tracks.
       appendTrack(mediaList, files[0], FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2)
       appendTrack(mediaList, files[-1], LArtist, LAlbum, LTitle, LTrack, LDisk, LTPE2)
       
@@ -42,10 +45,8 @@ def Scan(path, files, mediaList, subdirs):
       if (FDisk and FDisk != LDisk) or FTPE2 != LTPE2:
         for f in files[1:-1]:
           appendTrackFromTag(mediaList, f)
-        return
       else:
         appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2)
-        return
 
 def getTitleTrack(filename):
   """
@@ -72,6 +73,8 @@ def getTitleTrack(filename):
   if index != -1 and index + 1 != len(info[0]):
     info[0] = info[0][(index+1):].strip()
 
+  # Precompose.
+  info[0] = unicodedata.normalize('NFKC', info[0].decode('utf-8')).encode('utf-8')
   return info
 
 def getInfoFromTag(filename):
@@ -119,7 +122,6 @@ def appendAlbum(mediaList, files, artist, album, disk=None, TPE2=None):
     if info:
       appendTrack(mediaList, f, artist, album, info[0], info[1], disk, TPE2)
     else:
-      print "Slow path for", f
       appendTrackFromTag(mediaList, f)
 
 def appendTrackFromTag(mediaList, f):
