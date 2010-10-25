@@ -7,14 +7,14 @@ from mp4file import mp4file, atomsearch
 
 episode_regexps = [
     '(.*?)[sS](?P<season>[0-9]+)[\._ ]*[eE](?P<ep>[0-9]+)([- ]?[Ee+](?P<secondEp>[0-9]+))?',                           # S03E04-E05
-    '(.*?)[sS](?P<season>[0-9]+)[\._\- ]*(?P<ep>[0-9]+)',                                                              # S03-03
+    '(.*?)[sS](?P<season>[0-9]{2})[\._\- ]+(?P<ep>[0-9]+)',                                                            # S03-03
     '(.*?)([^0-9]|^)(?P<season>[0-9]{1,2})[Xx](?P<ep>[0-9]+)(-[0-9]+[Xx](?P<secondEp>[0-9]+))?',                       # 3x03
-    '(.*?)[^0-9a-z](?P<season>[0-9]{1,2})(?P<ep>[0-9]{2})([\.\-][0-9]+(?P<secondEp>[0-9]{2})([ \-_\.]|$)[\.\-]?)?([^0-9a-z]|$)' # .602.
+    '(.*?)[^0-9a-z](?P<season>[0-9]{1,2})(?P<ep>[0-9]{2})([\.\-][0-9]+(?P<secondEp>[0-9]{2})([ \-_\.]|$)[\.\-]?)?([^0-9a-z%]|$)' # .602.
   ]
 
 date_regexps = [
     '(?P<year>[0-9]{4})[^0-9a-zA-Z]+(?P<month>[0-9]{2})[^0-9a-zA-Z]+(?P<day>[0-9]{2})([^0-9]|$)',                # 2009-02-10
-    '(?P<month>[0-9]){2}[^0-9a-zA-Z]+(?P<day>[0-9]{2})[^0-9a-zA-Z(]+(?P<year>[0-9]{4})[^0-9a-zA-Z)]+([^0-9]|$)', # 02-10-2009
+    '(?P<month>[0-9]{2})[^0-9a-zA-Z]+(?P<day>[0-9]{2})[^0-9a-zA-Z(]+(?P<year>[0-9]{4})[^0-9a-zA-Z)]+([^0-9]|$)', # 02-10-2009
   ]
 
 standalone_episode_regexs = [
@@ -104,6 +104,11 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
+        # Take the year out.
+        cleanName, cleanYear = VideoFiles.CleanName(file)
+        if cleanYear != None:
+          file = file.replace(str(cleanYear), 'XXXX')
+        
         if ext.lower() in ['.mp4', '.m4v']:
           m4season = m4ep = m4year = 0
           m4show = title = ''
@@ -156,10 +161,6 @@ def Scan(path, files, mediaList, subdirs):
           
           for rx in episode_regexps:
             
-            # We're only going to run the weak one (.603.) if we have a season folder.
-            #if rx == episode_regexps[-1] and len(paths) == 1:
-            #  continue
-
             match = re.search(rx, file, re.IGNORECASE)
             if match:
               # Parse season and episode.
@@ -177,11 +178,6 @@ def Scan(path, files, mediaList, subdirs):
                   done = True
                   break
                   
-                # Skip season 19 and 20 for the weak regex because it ends up matching movie years.
-                if the_season == 19 or the_season == 20:
-                  done = True
-                  break
-                
                 # Make sure this isn't absolute order.
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
