@@ -79,7 +79,7 @@ def Scan(path, files, mediaList, subdirs):
       tv = False
       for rx in SeriesScanner.episode_regexps[0:-1]:
         if re.match(rx, name):
-          print "The file", file, "looked like a TV show so we're skipping it."
+          print "The file", file, "looked like a TV show so we're skipping it (", rx, ")"
           tv = True
       for rx in SeriesScanner.date_regexps:
         if re.search(rx, file):
