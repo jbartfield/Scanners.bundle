@@ -47,7 +47,7 @@ def Scan(path, files, mediaList, subdirs):
           appendTrackFromTag(mediaList, f)
       else:
         appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2)
-
+      
 def getTitleTrack(filename):
   """
   = [title, track] for the song at filename by using the regexs in trackRxs.

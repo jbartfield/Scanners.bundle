@@ -74,6 +74,10 @@ def _analyse(fp, offset0, offset1):
                 data= fp.read(min(atomsize-8, 32))
         if not atomtype in flagged[IGNORE]: yield atomtype, atomsize, data
         offset+= atomsize
+        
+        # If we're not making progress, get out.
+        if atomsize == 0:
+          break
 
 def mp4_atoms(pathname):
     fp= open(pathname, "rb")
