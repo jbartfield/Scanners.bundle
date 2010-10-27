@@ -98,7 +98,8 @@ def Scan(path, files, mediaList, subdirs):
 
     # Clean the folder name and try a match on the folder.
     if len(path) > 0:
-      (cleanName, year) = VideoFiles.CleanName(os.path.basename(path))
+      folderName = os.path.basename(path).replace(' ', ' ').replace(' ','.')
+      (cleanName, year) = VideoFiles.CleanName(folderName)
       if len(mediaList) == 1 and re.match(nice_match, cleanName):
         res = re.findall(nice_match, cleanName) 
         mediaList[0].name = res[0][0]
