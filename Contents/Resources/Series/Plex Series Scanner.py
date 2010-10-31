@@ -104,11 +104,6 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
-        # Take the year out.
-        cleanName, cleanYear = VideoFiles.CleanName(file)
-        if cleanYear != None:
-          file = file.replace(str(cleanYear), 'XXXX')
-        
         if ext.lower() in ['.mp4', '.m4v']:
           m4season = m4ep = m4year = 0
           m4show = title = ''
@@ -151,8 +146,14 @@ def Scan(path, files, mediaList, subdirs):
 
             done = True
             break
+
         
         if done == False:
+
+          # Take the year out, because it's not going to help at this point.
+          cleanName, cleanYear = VideoFiles.CleanName(file)
+          if cleanYear != None:
+            file = file.replace(str(cleanYear), 'XXXX')
           
           # Minor cleaning on the file to avoid false matches on H.264, 720p, etc.
           whackRx = ['([hHx][\.]?264)[^0-9]', '[^[0-9](720[pP])', '[^[0-9](1080[pP])', '[^[0-9](480[pP])']
