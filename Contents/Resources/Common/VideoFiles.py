@@ -32,7 +32,7 @@ def CleanName(name):
   orig = name
 
   # Make sure we pre-compose.
-  name = unicodedata.normalize('NFKD', name.decode('utf-8'))
+  name = unicodedata.normalize('NFKC', name.decode('utf-8'))
   name = name.lower()
 
   # grab the year, if there is one. set ourselves up to ignore everything after the year later on.
