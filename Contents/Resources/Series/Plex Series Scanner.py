@@ -44,8 +44,6 @@ def Scan(path, files, mediaList, subdirs):
   # Take top two as show/season, but require at least the top one.
   paths = path.split('/')
   
-  print files
-  
   if len(paths) == 1 and len(paths[0]) == 0:
   
     # Run the select regexps we allow at the top level.
