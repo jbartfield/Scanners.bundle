@@ -66,7 +66,7 @@ def Scan(path, files, mediaList, subdirs):
           for ep in range(episode, endEpisode+1):
             tv_show = Media.Episode(name, season, ep, '', year)
             tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
-            tv_show.parts.append(files[0])
+            tv_show.parts.append(i)
             mediaList.append(tv_show)
   
   elif len(paths) > 0 and len(paths[0]) > 0:
