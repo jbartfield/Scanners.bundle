@@ -70,6 +70,7 @@ def Scan(path, files, mediaList, subdirs):
     mediaList.append(movie)
     
   else:
+    
     # Make movies!
     for i in files:
       file = os.path.basename(i)
@@ -107,9 +108,39 @@ def Scan(path, files, mediaList, subdirs):
       elif len(mediaList) == 1 and (len(cleanName) > 1 or year is not None):
         mediaList[0].name = cleanName
         mediaList[0].year = year
+
+    # Check for a folder with multiple 'CD' subfolders and massage
+    foundCDsubdirs = {}
+    for s in subdirs:
+      print "Testing", os.path.basename(s).lower()
+      m = re.match('cd[ ]*([0-9]+)', os.path.basename(s).lower())
+      if m:
+        foundCDsubdirs[int(m.groups(1)[0])] = s
+
+    # More than one cd subdir, let's stack and whack subdirs.
+    if len(foundCDsubdirs) > 1: 
+      name, year = VideoFiles.CleanName(os.path.basename(path))
+      movie = Media.Movie(name, year)
+      movie.guid = checkNfoFile(os.path.dirname(foundCDsubdirs.values()[0]), 1)
       
+      keys = foundCDsubdirs.keys()
+      keys.sort()
+      for key in keys:
+        d = foundCDsubdirs[key]
+        subFiles = []
+        for f in os.listdir(d):
+          subFiles.append(os.path.join(d,f))
+        VideoFiles.Scan(d, subFiles, mediaList, [])
+        subdirs.remove(d)
+        movie.parts += subFiles
+      mediaList.append(movie)
+
+    # See if we can find a GUID.
+    for mediaItem in mediaList:
+      if mediaItem.guid is None:
+        mediaItem.guid = checkNfoFile(mediaItem.parts[0], len(mediaList))
+
     if len(mediaList) == 1:
-      mediaList[0].guid = checkNfoFile(os.path.dirname(files[0]))
       if mediaList[0].source is None:
         mediaList[0].source = VideoFiles.RetrieveSource(path)
          
@@ -137,25 +168,27 @@ def ContainsFile(files, file):
       return i
   return None
 
-def checkNfoFile(path):
+def checkNfoFile(file, fileCount):
   try:
-    nfoFile=''
-    if os.path.exists(path):
-      for f in os.listdir(path):
-        if f.split(".")[-1].lower() == "nfo":
-          nfoFile = os.path.join(path, f)
-          t = open(nfoFile)
-          nfoText = t.read()
-          if nfoText.find('imdb.com') > 0: #imdb.com url, it feels like
-            nfoText = nfoText[nfoText.find('imdb.com'):]
-            if nfoText.find('/tt') > 0 and nfoText.find('/tt') < 20: #we have a tt url!
-              nfoText = nfoText[nfoText.find('/tt'):]
-              id = "tt"
-              for c in nfoText[3:]:
-                try:
-                  id += str(int(c))
-                except:
-                  break
-              return id
+    path = None
+    
+    # Depending on how many media files we have, check differently.
+    if fileCount == 1:
+      # Look for any NFO file.
+      for f in os.listdir(os.path.dirname(file)):
+        if f[-4:].lower() == '.nfo':
+          path = os.path.join(os.path.dirname(file), f)
+          break
+    else:
+      # Look for a sidecar NFO file.
+      path = os.path.splitext(file)[0] + '.nfo'
+
+    if path is not None and os.path.exists(path):
+      nfoText = open(path).read()
+      m = re.search('(tt[0-9]+)', nfoText)
+      if m:
+        return m.groups(1)[0]
   except:
     print "Warning, couldn't read NFO file."
+
+  return None
