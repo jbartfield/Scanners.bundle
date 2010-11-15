@@ -18,6 +18,7 @@ class Movie(MediaRoot):
     MediaRoot.__init__(self,'Movie')
     self.name = name
     self.year = year
+    self.guid = None
     
   def __repr__(self):
     if self.year is not None:
