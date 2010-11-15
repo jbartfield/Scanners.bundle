@@ -243,7 +243,7 @@ def Scan(path, files, mediaList, subdirs):
               the_season = 1
           
               # Now look for a season.
-              if seasonNumber:
+              if seasonNumber is not None:
                 the_season = seasonNumber
                 
                 # See if we accidentally parsed the episode as season.
