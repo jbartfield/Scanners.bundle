@@ -112,13 +112,12 @@ def Scan(path, files, mediaList, subdirs):
     # Check for a folder with multiple 'CD' subfolders and massage
     foundCDsubdirs = {}
     for s in subdirs:
-      print "Testing", os.path.basename(s).lower()
       m = re.match('cd[ ]*([0-9]+)', os.path.basename(s).lower())
       if m:
         foundCDsubdirs[int(m.groups(1)[0])] = s
 
     # More than one cd subdir, let's stack and whack subdirs.
-    if len(foundCDsubdirs) > 1: 
+    if len(foundCDsubdirs) > 1:
       name, year = VideoFiles.CleanName(os.path.basename(path))
       movie = Media.Movie(name, year)
       movie.guid = checkNfoFile(os.path.dirname(foundCDsubdirs.values()[0]), 1)
@@ -133,7 +132,9 @@ def Scan(path, files, mediaList, subdirs):
         VideoFiles.Scan(d, subFiles, mediaList, [])
         subdirs.remove(d)
         movie.parts += subFiles
-      mediaList.append(movie)
+        
+      if len(movie.parts) > 0:
+        mediaList.append(movie)
 
     # See if we can find a GUID.
     for mediaItem in mediaList:
