@@ -135,6 +135,8 @@ def Scan(path, files, mediaList, subdirs):
   filesToRemove = []
   for i in files:
     
+    i = unicode(i.decode('utf-8'))
+    
     # Broken symlinks and zero byte files need not apply.
     if os.path.exists(i) == False or os.path.getsize(i) == 0:
       filesToRemove.append(i)
