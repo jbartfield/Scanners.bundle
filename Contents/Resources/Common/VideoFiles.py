@@ -136,10 +136,10 @@ def Scan(path, files, mediaList, subdirs):
   for i in files:
     
     # Use unicode for file operations.
-    i = unicode(i.decode('utf-8'))
+    filename = unicode(i.decode('utf-8'))
     
     # Broken symlinks and zero byte files need not apply.
-    if os.path.exists(i) == False or os.path.getsize(i) == 0:
+    if os.path.exists(filename) == False or os.path.getsize(filename) == 0:
       filesToRemove.append(i)
       
     else:
@@ -162,7 +162,7 @@ def Scan(path, files, mediaList, subdirs):
   # Uniquify and remove.
   filesToRemove = list(set(filesToRemove))
   for i in filesToRemove:
-    files.remove(i.encode('utf-8'))
+    files.remove(i)
       
   # Check directories, but not at the top-level.
   ignore_dirs_total = ignore_dirs_global
