@@ -7,7 +7,7 @@ video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'bup', 'd
 
 ignore_files = ['[-\._ ]sample', 'sample[-\._ ]', '-trailer\.']
 ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*']
-ignore_dirs_global = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\.AppleDouble']
+ignore_dirs_global = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*']
 ignore_suffixes = ['.dvdmedia']
 
 source_dict = {'bluray':['bdrc','bdrip','bluray','bd','brrip','hdrip','hddvd','hddvdrip'],'cam':['cam'],'dvd':['ddc','dvdrip','dvd','r1','r3'],'retail':['retail'],
