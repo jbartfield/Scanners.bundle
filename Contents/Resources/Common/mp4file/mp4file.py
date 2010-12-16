@@ -4,10 +4,10 @@ Created on Dec 6, 2009
 @author: napier
 '''
 from atom import parse_atoms, AtomWithChildren
-import logging
+#import logging
 import os
 
-log = logging.getLogger("mp4file")
+#log = logging.getLogger("mp4file")
 
 def getFileSize(file):
     file.seek(0, os.SEEK_END)
@@ -18,6 +18,6 @@ def getFileSize(file):
 class Mp4File(AtomWithChildren):
     def __init__(self, filename):
         file = open(filename, "rb")
-        # self.atoms = parse_atoms(file, getFileSize(file))
+        self.atoms = parse_atoms(file, getFileSize(file))
         AtomWithChildren.__init__(self, getFileSize(file),
                                   '', '', 0, file)

@@ -3,13 +3,13 @@ Created on Dec 6, 2009
 
 @author: napier
 '''
-import logging
+#import logging
 import os
 import struct
 
 from atomsearch import find_path, findall_path
 
-log = logging.getLogger("mp4file")
+#log = logging.getLogger("mp4file")
 
 class EndOFFile(Exception):
     def __init_(self):
@@ -55,6 +55,7 @@ def parse_atom(file):
 ATOM_TYPE_MAP = { '\xa9too': 'encoder',
                   '\xa9nam': 'title',
                   '\xa9alb': 'album',
+                  '\xa9ART': 'artist',
                   '\xa9art': 'artist',
                   '\xa9cmt': 'comment',
                   '\xa9gen': 'genre',
@@ -75,6 +76,7 @@ ATOM_TYPE_MAP = { '\xa9too': 'encoder',
                   'purl': 'podcasturl',
                   'egid': 'episodeguid',
                   'desc': 'description',
+                  'ldes': 'long_description',
                   '\xa9lyr': 'lyrics',
                   'tvnn': 'tvnetwork',
                   'tvsh': 'tvshow',
@@ -89,20 +91,20 @@ ATOM_TYPE_MAP = { '\xa9too': 'encoder',
 # special classes for all of them
 ATOM_WITH_CHILDREN = [ 'stik', 'moov', 'trak',
                        'udta', 'ilst', '\xa9too',
-                       '\xa9nam', '\xa9alb', '\xa9art',
+                       '\xa9nam', '\xa9alb', '\xa9ART', '\xa9art',
                        '\xa9cmt', '\xa9gen', 'gnre',
                        '\xa9day', 'trkn', 'disk',
                        '\xa9wrt', 'tmpo', 'cptr',
                        'cpil', 'covr', 'rtng',
                        '\xa9grp', 'pcst', 'catg',
                        'keyw', 'purl', 'egid',
-                       'desc', '\xa9lyr', 'tvnn',
+                       'desc', 'ldes', '\xa9lyr', 'tvnn',
                        'tvsh', 'tven', 'tvsn',
                        'tves', 'purd', 'pgap',
                       ]
 
 def create_atom(size, type, offset, file):
-    clz = type
+    clz = type.lower()
     # Possibly remap atom types that aren't valid
     # python variable names
     if (ATOM_TYPE_MAP.has_key(type)):
@@ -120,10 +122,11 @@ def parse_atoms(file, maxFileOffset):
     atoms = []
     while file.tell() < maxFileOffset:
         atom = parse_atom(file)
-        atoms.append(atom)
-        
-        if atom.size == 0:
+
+        if not atom or atom.size == 0:
           break
+
+        atoms.append(atom)
 
         # Seek to the end of the atom
         file.seek(atom.offset + atom.size, os.SEEK_SET)
@@ -198,8 +201,13 @@ class data(Atom):
             read32(self.file)
             data = self.file.read(self.size - 16)
             self._set_attr("data", data)
+        elif self.type == 22:
+            # uint8.
+            read32(self.file)
+            data = read8(self.file)
+            self._set_attr("data", data)
         else:
-            print self.type
+            print "UNKNOWN TYPE", self.type
 
     def parse_string(self):
         # consume extra null?
