@@ -129,7 +129,7 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
-        if ext.lower() in ['.mp4', '.m4v']:
+        if ext.lower() in ['.mp4', '.m4v', '.mov']:
           m4season = m4ep = m4year = 0
           m4show = title = ''
           try: 
@@ -139,7 +139,11 @@ def Scan(path, files, mediaList, subdirs):
             try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
             except: pass
             try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
-            except: pass
+            except: 
+              try: 
+                m4ep = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisodenum')
+                m4ep = int(re.findall('[0-9]+', m4ep)[0])
+              except: pass
             try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title').encode('utf-8')
             except: pass
             try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
@@ -152,7 +156,7 @@ def Scan(path, files, mediaList, subdirs):
               mediaList.append(tv_show)
               continue
 
-          except: 
+          except:
             pass
         
         # Check for date-based regexps first.
