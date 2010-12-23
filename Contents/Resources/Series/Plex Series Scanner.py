@@ -134,18 +134,52 @@ def Scan(path, files, mediaList, subdirs):
           m4show = title = ''
           try: 
             mp4fileTags = mp4file.Mp4File(i)
+            
+            # Show.
             try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow').encode('utf-8')
             except: pass
+              
+            # Season.
             try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
             except: pass
-            try: m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+              
+            # Episode.
+            m4ep = None
+            try:
+              # tracknum (can be 101)
+              m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tracknum'))
             except: 
-              try: 
+              try:
+                # tvepisodenum (can be S2E16)
                 m4ep = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisodenum')
-                m4ep = int(re.findall('[0-9]+', m4ep)[0])
-              except: pass
+              except:
+                # TV Episode (can be 101)
+                m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+            
+            if m4ep is not None:
+              found = False
+              try:
+                # See if it matches regular expression.
+                for rx in episode_regexps:
+                  match = re.search(rx, file, re.IGNORECASE)
+                  if match:
+                    m4season = int(match.group('season'))
+                    m4ep = int(match.group('ep'))
+                    found = True
+              
+                if found == False and re.match('[0-9]+', str(m4ep)):
+                  # Carefully convert to episode number.
+                  m4ep = int(m4ep) % 100
+                elif found == False:
+                  m4ep = int(re.findall('[0-9]+', m4ep)[0])
+              except:
+                pass
+
+            # Title.
             try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title').encode('utf-8')
             except: pass
+              
+            # Year.
             try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
             except: pass
 
