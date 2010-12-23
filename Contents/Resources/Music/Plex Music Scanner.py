@@ -79,7 +79,7 @@ def getTitleTrack(filename):
 
 def getInfoFromTag(filename):
   "= (artist, album, title, track, disk, 'album-artist') for the song at filename.  Returns None if no valid tag is found"
-  if filename.endswith("mp3"):
+  if filename.lower().endswith("mp3"):
     try:
       tag = ID3v2.ID3v2(filename)
       if tag.isOK() and len(tag.artist) != 0 and len(tag.album) != 0:
@@ -94,7 +94,7 @@ def getInfoFromTag(filename):
     except:
       return None
 
-  if filename.endswith("m4a") or filename.endswith("m4b"):
+  if filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
     try:
       tag = M4ATags.M4ATags(filename)
       artist = tag['Artist']
