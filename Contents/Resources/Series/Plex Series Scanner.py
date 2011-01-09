@@ -148,7 +148,7 @@ def Scan(path, files, mediaList, subdirs):
             try:
               # tracknum (can be 101)
               m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tracknum'))
-            except: 
+            except:
               try:
                 # tvepisodenum (can be S2E16)
                 m4ep = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisodenum')
@@ -160,7 +160,7 @@ def Scan(path, files, mediaList, subdirs):
               found = False
               try:
                 # See if it matches regular expression.
-                for rx in episode_regexps:
+                for rx in episode_regexps[:-1]:
                   match = re.search(rx, file, re.IGNORECASE)
                   if match:
                     m4season = int(match.group('season'))
