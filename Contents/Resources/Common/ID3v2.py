@@ -53,7 +53,7 @@ _encodings = ['iso8859-1', 'utf-16', 'utf-16be', 'utf-8']
 # This gets the id3v2 tag from the file specified.
 #
 class ID3v2:
-	def __init__(self, filename):
+	def __init__(self, filename, language=None):
 
 		self.artist = ''
 		self.album	= ''
@@ -64,6 +64,7 @@ class ID3v2:
 		self.track = None
 		self.TPE2 = None
 		self.disk = None # None unless album has multiple disks
+		self.language = language
 		
 		f				= open(self.filename, 'rb')
 
@@ -185,7 +186,7 @@ class ID3v2:
 	# Sets the album name
 	#
 	def processTALB( self, theString, theFlags, theValue ):
-		self.album = fixEncoding( theValue )
+		self.album = fixEncoding( theValue, self.language )
 	def processTAL(self, theString, theFlags, theValue):
 		self.processTALB(theString, theFlags, theValue)
 
@@ -196,7 +197,7 @@ class ID3v2:
 	# Sets the artist name
 	#
 	def processTPE1( self, theString, theFlags, theValue ):
-		self.artist = fixEncoding( theValue )
+		self.artist = fixEncoding( theValue, self.language )
 	def processTP1(self, s, f, v):
 		self.processTPE1(s,f,v)
 		
@@ -204,13 +205,13 @@ class ID3v2:
   # Sets the TPE2
   #
 	def processTPE2( self, theString, theFlags, theValue ):
-		self.TPE2 = fixEncoding( theValue )
+		self.TPE2 = fixEncoding( theValue, self.language )
 		
 	#
 	# Sets the disk
 	#
 	def processTPOS( self, theString, theFlags, theValue ):
-		TPOS = fixEncoding( theValue )
+		TPOS = fixEncoding( theValue, self.language )
 		try:
 			if TPOS == '1/1':
 				return
@@ -227,7 +228,7 @@ class ID3v2:
 	# Sets the year.
 	#
 	def processTYER( self, theString, theFlags, theValue ):
-		self.year = fixEncoding( theValue )
+		self.year = fixEncoding( theValue, self.language )
 	def processTYE(self, s, f, v):
 		self.processTYER(s,f,v)
 
@@ -235,7 +236,7 @@ class ID3v2:
 	# Sets the track
 	#
 	def processTRCK(self,s,f,v):
-		track = fixEncoding(v)
+		track = fixEncoding(v, self.language)
 		slash = track.find('/')
 		if slash != -1:
 			track = track[0:slash]
@@ -247,7 +248,7 @@ class ID3v2:
 	# Sets the title track name
 	#
 	def processTIT2( self, theString, theFlags, theValue ):
-		self.title = fixEncoding( theValue )
+		self.title = fixEncoding( theValue, self.language )
 	def processTT2( self, theString, theFlags, theValue ):
 		self.processTIT2(theString, theFlags, theValue)
 

@@ -16,7 +16,7 @@ trackRx2 = '.*[-. _]+([0-9]{2})[-\. ]+(.+)\.[a-z0-9]{3,4}'
 
 trackRxs = [trackRx1, trackRx2]
 
-def Scan(path, files, mediaList, subdirs):
+def Scan(path, files, mediaList, subdirs, language=None):
   
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
@@ -24,12 +24,22 @@ def Scan(path, files, mediaList, subdirs):
 
   if len(files) < 1:
     return
+    
+  # Root level music
+  if len(path) == 0:
+    for file in files:
+      try: 
+        (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(file, language)
+        appendAlbum(mediaList, [file], FArtist, FAlbum, FDisk, FTPE2, language)
+      except:
+        print "No tag for", file
+    return
 
   # Looks like an album
   if len(path) > 1 and len(path[0]) > 0 and 0 < len(files) < 50:
     try:
-      (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(files[0])
-      (LArtist, LAlbum, LTitle, LTrack, LDisk, LTPE2) = getInfoFromTag(files[-1])
+      (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(files[0], language)
+      (LArtist, LAlbum, LTitle, LTrack, LDisk, LTPE2) = getInfoFromTag(files[-1], language)
     except:            # if either getInfoFromTag(...) == None
       FArtist = 'a'    # will short circuit and
       LArtist = 'b'    # skip the next if branch
@@ -44,9 +54,9 @@ def Scan(path, files, mediaList, subdirs):
       #          Check disks            check TPE2
       if (FDisk and FDisk != LDisk) or FTPE2 != LTPE2:
         for f in files[1:-1]:
-          appendTrackFromTag(mediaList, f)
+          appendTrackFromTag(mediaList, f, language)
       else:
-        appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2)
+        appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2, language)
       
 def getTitleTrack(filename):
   """
@@ -77,11 +87,11 @@ def getTitleTrack(filename):
   info[0] = unicodedata.normalize('NFKC', info[0].decode('utf-8')).encode('utf-8')
   return info
 
-def getInfoFromTag(filename):
+def getInfoFromTag(filename, language):
   "= (artist, album, title, track, disk, 'album-artist') for the song at filename.  Returns None if no valid tag is found"
   if filename.lower().endswith("mp3"):
     try:
-      tag = ID3v2.ID3v2(filename)
+      tag = ID3v2.ID3v2(filename, language)
       if tag.isOK() and len(tag.artist) != 0 and len(tag.album) != 0:
         if tag.TPE2 and tag.TPE2.lower() == tag.artist:
           tag.TPE2 = None
@@ -111,7 +121,7 @@ def appendTrack(mediaList, f, artist, album, title, track, disk=None, TPE2=None)
     t.parts.append(f)
     mediaList.append(t)
 
-def appendAlbum(mediaList, files, artist, album, disk=None, TPE2=None):
+def appendAlbum(mediaList, files, artist, album, disk=None, TPE2=None, language=None):
   """
   Adds all the files to the mediaList with the given artist and album.  If it can't get the title and track, then it attempts
   to add the file by using tags.  As a result, a file might potentially be added with a different artist/album than those 
@@ -122,10 +132,10 @@ def appendAlbum(mediaList, files, artist, album, disk=None, TPE2=None):
     if info:
       appendTrack(mediaList, f, artist, album, info[0], info[1], disk, TPE2)
     else:
-      appendTrackFromTag(mediaList, f)
+      appendTrackFromTag(mediaList, f, language)
 
-def appendTrackFromTag(mediaList, f):
-  info = getInfoFromTag(f)
+def appendTrackFromTag(mediaList, f, language):
+  info = getInfoFromTag(f, language)
   if info:
     appendTrack(mediaList, f, *info)
 
