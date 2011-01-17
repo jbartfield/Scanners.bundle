@@ -21,10 +21,10 @@ for d in source_dict:
 
 audio = ['([^0-9])5\.1[ ]*ch(.)','([^0-9])5\.1([^0-9]?)','([^0-9])7\.1[ ]*ch(.)','([^0-9])7\.1([^0-9])']
 subs = ['multi','multisubs']
-misc = ['2cd','custom','internal','repack','read.nfo','readnfo','nfofix','proper','rerip','dubbed','subbed','extended','unrated','xxx','nfo','dvxa']
+misc = ['cd1','cd2','1cd','2cd','custom','internal','repack','read.nfo','readnfo','nfofix','proper','rerip','dubbed','subbed','extended','unrated','xxx','nfo','dvxa']
 format = ['ac3','dc','divx','fragment','limited','ogg','ogm','ntsc','pal','ps3avchd','r1','r3','r5','720i','720p','1080i','1080p','x264','xvid','vorbis','aac','dts','fs','ws','1920x1080','1280x720','h264']
 edition = ['dc','se'] # dc = directors cut, se = special edition
-yearRx = '([\(\[\.\-])([1-2][0-9]{3})([\.\-\)\]])'
+yearRx = '([\(\[\.\-])([1-2][0-9]{3})([\.\-\)\]_,+])'
 
 # Cleanup folder / filenames
 def CleanName(name):
@@ -64,13 +64,13 @@ def CleanName(name):
     name = rx.sub(' ', name)
   
   # Now tokenize.
-  tokens = re.split('([^ \-_\.\(\)]+)', name)
+  tokens = re.split('([^ \-_\.\(\)+]+)', name)
   
   # Process tokens.
   newTokens = []
   for t in tokens:
     t = t.strip()
-    if not re.match('[\.\-_\(\)]+', t) and len(t) > 0:
+    if not re.match('[\.\-_\(\)+]+', t) and len(t) > 0:
     #if t not in ('.', '-', '_', '(', ')') and len(t) > 0:
       newTokens.append(t)
 
@@ -107,7 +107,7 @@ def CleanName(name):
     if len(tokenBitmap) <= 2:
       good = True
     
-    if good and numBad < 2:
+    if good and numBad < 1:
       if newTokens[i] == '*yearBreak*':
         #if we have a year, we can ignore everything after this.
         break
