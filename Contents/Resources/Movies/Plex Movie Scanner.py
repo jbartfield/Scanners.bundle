@@ -59,6 +59,7 @@ def Scan(path, files, mediaList, subdirs):
       movie.parts.append(biggestFile)
         
     if len(movie.parts) > 0:
+      movie.guid = checkNfoFile(movie.parts[0], 1)
       mediaList.append(movie)
 
   # Check for Bluray rips.
