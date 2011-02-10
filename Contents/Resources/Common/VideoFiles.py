@@ -1,4 +1,5 @@
 #!/usr/bin/python2.4
+import Filter
 import os.path, re, datetime, titlecase, unicodedata
 
 video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'bup', 'divx', 'dv', 'dvr-ms', 'evo', 'fli', 'flv', 'ifo', 'img', 
@@ -7,7 +8,6 @@ video_exts = ['3gp', 'asf', 'asx', 'avc', 'avi', 'avs', 'bin', 'bivx', 'bup', 'd
 
 ignore_files = ['[-\._ ]sample', 'sample[-\._ ]', '-trailer\.']
 ignore_dirs =  ['extras?', '!?samples?', 'bonus', '.*bonus disc.*']
-ignore_dirs_global = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*']
 ignore_suffixes = ['.dvdmedia']
 
 source_dict = {'bluray':['bdrc','bdrip','bluray','bd','brrip','hdrip','hddvd','hddvdrip'],'cam':['cam'],'dvd':['ddc','dvdrip','dvd','r1','r3'],'retail':['retail'],
@@ -132,32 +132,19 @@ def CleanName(name):
 
 # Remove files that aren't videos.
 def Scan(path, files, mediaList, subdirs):
+  
+  # Filter out bad stuff.
+  Filter.Scan(path, files, mediaList, subdirs, video_exts)
+  
   filesToRemove = []
   for i in files:
-    
-    # Use unicode for file operations.
-    filename = unicode(i.decode('utf-8'))
-    
-    # Broken symlinks and zero byte files need not apply.
-    if os.path.exists(filename) == False or os.path.getsize(filename) == 0:
-      filesToRemove.append(i)
+    # Remove files that aren't video.
+    (file, ext) = os.path.splitext(i)
       
-    else:
-      (file, ext) = os.path.splitext(i)
-      file = os.path.basename(file)
-    
-      # Remove files that aren't video.
-      if not ext.lower()[1:] in video_exts:
+    # Remove sample files.
+    for rx in ignore_files:
+      if re.search(rx, i, re.IGNORECASE):
         filesToRemove.append(i)
-        
-      # Remove hidden files.
-      if len(file) == 0 or file[0] == '.':
-        filesToRemove.append(i)
-    
-      # Remove sample files.
-      for rx in ignore_files:
-        if re.search(rx, i, re.IGNORECASE):
-          filesToRemove.append(i)
         
   # Uniquify and remove.
   filesToRemove = list(set(filesToRemove))
@@ -165,7 +152,7 @@ def Scan(path, files, mediaList, subdirs):
     files.remove(i)
       
   # Check directories, but not at the top-level.
-  ignore_dirs_total = ignore_dirs_global
+  ignore_dirs_total = []
   if len(path) > 0:
     ignore_dirs_total += ignore_dirs
   
