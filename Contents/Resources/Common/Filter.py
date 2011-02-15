@@ -1,7 +1,7 @@
 import os, re
 
 IGNORE_DIRS = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*']
-ROOT_IGNORE_DIRS = ['\$Recycle.Bin', 'System Volume Information', 'Recovery']
+ROOT_IGNORE_DIRS = ['\$Recycle.Bin', 'System Volume Information']
 
 # Remove files and directories that don't make sense to scan.
 def Scan(path, files, mediaList, subdirs, exts):
