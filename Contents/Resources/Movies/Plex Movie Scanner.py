@@ -9,7 +9,7 @@ nice_match = '(.+) [\(\[]([1-2][0-9]{3})[\)\]]'
 standalone_tv_regexs = [ '(.*?)( \(([0-9]+)\))? - ([0-9])+x([0-9]+)(-[0-9]+[Xx]([0-9]+))? - (.*)' ]
 
 # Scans through files, and add to the media list.
-def Scan(path, files, mediaList, subdirs):
+def Scan(path, files, mediaList, subdirs, language=None, **kwargs):
   
   # Scan for video files.
   VideoFiles.Scan(path, files, mediaList, subdirs)
