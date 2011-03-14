@@ -120,7 +120,11 @@ def CleanName(name):
       numGood += 1
     else:
       numBad += 1
-  
+
+  # If we took *all* the tokens out, use the first one, otherwise we'll end up with no name at all.
+  if len(finalTokens) == 0 and len(newTokens) > 0:
+    finalTokens.append(newTokens[0])
+    
   #print "CLEANED [%s] => [%s]" % (orig, u' '.join(finalTokens))
   #print "TOKENS: ", newTokens
   #print "BITMAP: ", tokenBitmap
