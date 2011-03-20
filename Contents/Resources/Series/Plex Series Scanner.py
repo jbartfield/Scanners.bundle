@@ -25,6 +25,7 @@ standalone_episode_regexs = [
 season_regex = '(.*)[ \.\-_]([0-9]{4})?([Ss](eason)?)([0-9]+)(.*)' # folder for a season
 
 just_episode_regexs = [
+    '(?P<ep>[0-9]{1,3})[\. -_]of[\. -_]+[0-9]{1,3}',       # 01 of 08
     '^(?P<ep>[0-9]{2,3})[^0-9]',                           # 01 - Foo
     'e[a-z]*[ \.\-_]*(?P<ep>[0-9]{2,3})([^0-9c-uw-z%]|$)', # Blah Blah ep234
     '.*?[ \.\-_](?P<ep>[0-9]{2,3})[^0-9c-uw-z%]+',         # Flah - 04 - Blah
