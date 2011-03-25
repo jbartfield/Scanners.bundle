@@ -21,7 +21,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
   paths = path.split('/')
-
+  
   if len(files) < 1:
     return
     
@@ -57,6 +57,12 @@ def Scan(path, files, mediaList, subdirs, language=None):
           appendTrackFromTag(mediaList, f, language)
       else:
         appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2, language)
+        
+    else:
+    
+      # Add all the tracks.
+      for file in files:
+        appendTrackFromTag(mediaList, file, language)
       
 def getTitleTrack(filename):
   """
