@@ -4,6 +4,7 @@
 import re, os, os.path
 import Media, AudioFiles
 import ID3, ID3v2, M4ATags
+from mutagen.flac import FLAC
 import unicodedata
 
 # 01 - Track.mp3
@@ -28,11 +29,11 @@ def Scan(path, files, mediaList, subdirs, language=None):
   # Root level music
   if len(path) == 0:
     for file in files:
-      try: 
-        (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(file, language)
-        appendAlbum(mediaList, [file], FArtist, FAlbum, FDisk, FTPE2, language)
-      except:
-        print "No tag for", file
+      #try:
+      (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(file, language)
+      appendAlbum(mediaList, [file], FArtist, FAlbum, FDisk, FTPE2, language)
+      #except:
+      #  print "No tag for", file
     return
 
   # Looks like an album
@@ -43,23 +44,18 @@ def Scan(path, files, mediaList, subdirs, language=None):
     except:            # if either getInfoFromTag(...) == None
       FArtist = 'a'    # will short circuit and
       LArtist = 'b'    # skip the next if branch
-
     #           Check artist                               Check album
     if FArtist.lower() == LArtist.lower() and FAlbum.lower() == FAlbum.lower() and len(FArtist) > 0 and len(FAlbum) > 0:
-      
       # Add the first and last tracks.
       appendTrack(mediaList, files[0], FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2)
       appendTrack(mediaList, files[-1], LArtist, LAlbum, LTitle, LTrack, LDisk, LTPE2)
-      
       #          Check disks            check TPE2
       if (FDisk and FDisk != LDisk) or FTPE2 != LTPE2:
         for f in files[1:-1]:
           appendTrackFromTag(mediaList, f, language)
       else:
         appendAlbum(mediaList, files[1:-1], FArtist, FAlbum, FDisk, FTPE2, language)
-        
     else:
-    
       # Add all the tracks.
       for file in files:
         appendTrackFromTag(mediaList, file, language)
@@ -83,12 +79,10 @@ def getTitleTrack(filename):
   if reorder:
     trackRxs.remove(rx)
     trackRxs.insert(0, rx)
-
   # 01 - Artist - Track.mp3
   index = info[0].rfind("-")
   if index != -1 and index + 1 != len(info[0]):
     info[0] = info[0][(index+1):].strip()
-
   # Precompose.
   info[0] = unicodedata.normalize('NFKC', info[0].decode('utf-8')).encode('utf-8')
   return info
@@ -102,15 +96,13 @@ def getInfoFromTag(filename, language):
         if tag.TPE2 and tag.TPE2.lower() == tag.artist:
           tag.TPE2 = None
         return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2)
-
       tag = ID3.ID3(filename)
       if tag.has_tag and len(tag.artist) != 0 and len(tag.album) != 0:
         return (tag.artist, tag.album, tag.title, int(tag.track), None, None)
       return None
     except:
       return None
-
-  if filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
+  elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
     try:
       tag = M4ATags.M4ATags(filename)
       artist = tag['Artist']
@@ -120,7 +112,19 @@ def getInfoFromTag(filename, language):
       return (artist, album, title, track, None, None)
     except:
       return None
-
+  elif filename.lower().endswith("flac"):
+    try: tag = FLAC(filename)
+    except: return None
+    try: artist = tag['artist'][0]
+    except: artist = ''
+    try: album = tag['album'][0]
+    except: album = None
+    try: title = tag['title'][0]
+    except: title = None
+    try: track = int(tag['tracknumber'][0])
+    except: track = None
+    return (artist, album, title, track, None, None)
+    
 def appendTrack(mediaList, f, artist, album, title, track, disk=None, TPE2=None):
   t = Media.Track(artist, album, title, track, disc=disk, album_artist=TPE2)
   if len(artist) > 0 and len(album) > 0:
@@ -144,4 +148,3 @@ def appendTrackFromTag(mediaList, f, language):
   info = getInfoFromTag(f, language)
   if info:
     appendTrack(mediaList, f, *info)
-
