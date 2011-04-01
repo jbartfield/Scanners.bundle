@@ -30,11 +30,11 @@ def Scan(path, files, mediaList, subdirs, language=None):
   # Root level music
   if len(path) == 0:
     for file in files:
-      #try:
-      (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(file, language)
-      appendAlbum(mediaList, [file], FArtist, FAlbum, FDisk, FTPE2, language)
-      #except:
-      #  print "No tag for", file
+      try:
+        (FArtist, FAlbum, FTitle, FTrack, FDisk, FTPE2) = getInfoFromTag(file, language)
+        appendAlbum(mediaList, [file], FArtist, FAlbum, FDisk, FTPE2, language)
+      except:
+        print "No tag for", file
     return
 
   # Looks like an album
@@ -98,27 +98,44 @@ def getInfoFromTag(filename, language):
           tag.TPE2 = None
         return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2)
       tag = ID3.ID3(filename)
-      if tag.has_tag and len(tag.artist) != 0 and len(tag.album) != 0:
-        return (tag.artist, tag.album, tag.title, int(tag.track), None, None)
-      return None
-    except:
-      return None
-  elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
-    try:
-      tag = M4ATags.M4ATags(filename)
-      artist = tag['Artist']
-      album = tag['Album']
-      title = tag['Title']
-      track = int(tag['Track'])
+      try: artist = tag.artist
+      except: artist = None
+      try: 
+        album = tag.album
+        if len(album) == 0:
+          album = '-'
+      except: album = '-'
+      try: title = tag.title
+      except: title = None
+      try: track = int(tag.track)
+      except: track = None
       return (artist, album, title, track, None, None)
     except:
       return None
+  elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
+    try: tag = M4ATags.M4ATags(filename)
+    except: return None
+    try: artist = tag['Artist']
+    except: artist = ''
+    try: 
+      album = tag['Album']
+      if len(album) == 0:
+        album = '-'
+    except: album = None
+    try: title = tag['Title']
+    except: title = None
+    try: track = int(tag['Track'])
+    except: track = None
+    return (artist, album, title, track, None, None)
   elif filename.lower().endswith("flac"):
     try: tag = FLAC(filename)
     except: return None
     try: artist = tag['artist'][0].encode('utf-8')
     except: artist = ''
-    try: album = tag['album'][0].encode('utf-8')
+    try: 
+      album = tag['album'][0].encode('utf-8')
+      if len(album) == 0:
+        album = '-'
     except: album = None
     try: title = tag['title'][0].encode('utf-8')
     except: title = None
@@ -130,7 +147,10 @@ def getInfoFromTag(filename, language):
     except: return None
     try: artist = tag['artist'][0].encode('utf-8')
     except: artist = ''
-    try: album = tag['album'][0].encode('utf-8')
+    try: 
+      album = tag['album'][0].encode('utf-8')
+      if len(album) == 0:
+        album = '-'
     except: album = None
     try: title = tag['title'][0].encode('utf-8')
     except: title = None
