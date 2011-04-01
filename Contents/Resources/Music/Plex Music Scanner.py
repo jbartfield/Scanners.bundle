@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2010 Plex Development Team. All rights reserved.
+# Copyright (c) 2010-2011 Plex Development Team. All rights reserved.
 #
 import re, os, os.path
 import Media, AudioFiles
@@ -103,7 +103,7 @@ def getInfoFromTag(filename, language):
       try: 
         album = tag.album
         if len(album) == 0:
-          album = '-'
+          album = '[Unknown]'
       except: album = '-'
       try: title = tag.title
       except: title = None
@@ -116,11 +116,11 @@ def getInfoFromTag(filename, language):
     try: tag = M4ATags.M4ATags(filename)
     except: return None
     try: artist = tag['Artist']
-    except: artist = ''
+    except: artist = None
     try: 
       album = tag['Album']
       if len(album) == 0:
-        album = '-'
+        album = '[Unknown]'
     except: album = None
     try: title = tag['Title']
     except: title = None
@@ -131,11 +131,11 @@ def getInfoFromTag(filename, language):
     try: tag = FLAC(filename)
     except: return None
     try: artist = tag['artist'][0].encode('utf-8')
-    except: artist = ''
+    except: artist = None
     try: 
       album = tag['album'][0].encode('utf-8')
       if len(album) == 0:
-        album = '-'
+        album = '[Unknown]'
     except: album = None
     try: title = tag['title'][0].encode('utf-8')
     except: title = None
@@ -146,11 +146,11 @@ def getInfoFromTag(filename, language):
     try: tag = OggVorbis(filename)
     except: return None
     try: artist = tag['artist'][0].encode('utf-8')
-    except: artist = ''
+    except: artist = None
     try: 
       album = tag['album'][0].encode('utf-8')
       if len(album) == 0:
-        album = '-'
+        album = '[Unknown]'
     except: album = None
     try: title = tag['title'][0].encode('utf-8')
     except: title = None
