@@ -61,6 +61,10 @@ def Scan(path, files, mediaList, subdirs, language=None):
       # Add all the tracks.
       for file in files:
         appendTrackFromTag(mediaList, file, language)
+  elif len(path) > 1 and len(path[0]) > 0 and len(files) >= 50:
+    # Add all the tracks.
+    for file in files:
+      appendTrackFromTag(mediaList, file, language)
       
 def getTitleTrack(filename):
   """
