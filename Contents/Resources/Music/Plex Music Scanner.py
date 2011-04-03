@@ -6,6 +6,7 @@ import Media, AudioFiles
 import ID3, ID3v2, M4ATags
 from mutagen.flac import FLAC
 from mutagen.oggvorbis import OggVorbis
+from mutagen.mp4 import MP4
 import unicodedata
 
 # 01 - Track.mp3
@@ -113,18 +114,23 @@ def getInfoFromTag(filename, language):
     except:
       return None
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b"):
-    try: tag = M4ATags.M4ATags(filename)
+    try: tag = MP4(filename)
     except: return None
-    try: artist = tag['Artist']
-    except: artist = None
+    try: artist = tag['\xa9ART'][0].encode('utf-8')
+    except: 
+      try: artist = tag['aART'][0].encode('utf-8')
+      except: artist = None
     try: 
-      album = tag['Album']
+      album = tag['\xa9alb'][0].encode('utf-8')
       if len(album) == 0:
         album = '[Unknown]'
     except: album = None
-    try: title = tag['Title']
+    try: 
+      title = tag['\xa9nam'][0].encode('utf-8')
     except: title = None
-    try: track = int(tag['Track'])
+    try: 
+      (track, disc) = tag['trkn'][0]
+      track = int(track)
     except: track = None
     return (artist, album, title, track, None, None)
   elif filename.lower().endswith("flac"):
