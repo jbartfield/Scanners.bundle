@@ -12,15 +12,14 @@ from mutagen.easymp4 import EasyMP4
 def Scan(path, files, mediaList, subdirs, language=None):
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
-  paths = path.split('/')
   if len(files) < 1: return
   for f in files:
     try:
       (artist, album, title, track, disk, TPE2) = getInfoFromTag(f, language)
       appendTrack(mediaList, f, artist, album, title, track, disk, TPE2)
-      print '[Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disk) + '] [Album Artist: ' + str(TPE2) + ']'
+      print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disk) + '] [Album Artist: ' + str(TPE2) + '] [File: ' + f + ']'
     except:
-      print "Tag issue with: ", f
+      print "Skipping (Metadata tag issue): ", f
   return
 
 def appendTrack(mediaList, f, artist, album, title, track, disk=None, TPE2=None):
@@ -75,7 +74,7 @@ def getInfoFromTag(filename, language):
       except: track = None
       try: disc = int(tag['discnumber'][0])
       except: disc = None
-      try: TPE2 = tag['performer']
+      try: TPE2 = tag['performer'][0].encode('utf-8')
       except: TPE2 = None
       return (artist, album, title, track, disc, TPE2)
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
