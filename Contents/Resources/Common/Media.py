@@ -48,6 +48,7 @@ class Track(MediaRoot):
     self.year = year
     self.disc = disc
     self.album_artist = album_artist
+    self.title = ''
     
   def __repr__(self):
     return "%s (album: %s, track: %s) #%d => %s" % (self.artist, self.album, self.name, self.index, self.title)
