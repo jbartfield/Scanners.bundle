@@ -14,17 +14,16 @@ def Scan(path, files, mediaList, subdirs, language=None):
   AudioFiles.Scan(path, files, mediaList, subdirs)
   if len(files) < 1: return
   nextTrackNumber = {}
+  albumArtistTrackNumbers = {}
   for f in files:
     try:
       (artist, album, title, track, disc, album_artist) = getInfoFromTag(f, language)
-      if artist == None or len(artist) == 0:
+      if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
-      if album == None or len(album) == 0:
+      if album == None or len(album.strip()) == 0:
         album = '[Unknown Album]'
-      if title == None or len(title) == 0:
+      if title == None or len(title) == 0: #use the filename for the title
         title = os.path.splitext(os.path.split(f)[1])[0]
-        if title.count('-') == 1 and artist == '[Unknown Artist]':
-          (artist, title) = title.split('-')
       if track == None:
         #see if we have a tracknumber in the title
         if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
@@ -34,7 +33,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
           track = int(title[0])
           title = title[2:]
       else:
-        #check to see if the tracknumber is in the title and remove it
+        # check to see if the tracknumber is in the title and remove it
         if str(track) == title[0]: 
           title = title[1:]
           if title[0] in string.punctuation: title = title[1:]
@@ -44,13 +43,22 @@ def Scan(path, files, mediaList, subdirs, language=None):
         elif str(track) == title[:2]: 
           title = title[2:]
           if title[0] in string.punctuation: title = title[1:]
-      if track == None: #still None? make up a tracknumber to avoid a single track getting multiple parts
+      if title.count('-') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
+        (artist, title) = title.split('-')
+        if len(artist) == 0: artist = '[Unknown Artist]'
+      if track == None: # still None? make up a tracknumber to avoid a single track getting multiple parts
         if not nextTrackNumber.has_key(artist+album):
-          nextTrackNumber[artist+album] = 100
+          nextTrackNumber[artist+album] = 200
         track = nextTrackNumber[artist+album]
         nextTrackNumber[artist+album]+=1
+      else: # let's make sure we aren't repeating a tracknumber
+        if albumArtistTrackNumbers.has_key(album+artist):
+          if track in albumArtistTrackNumbers[album+artist]:
+            track = track + 100
+            albumArtistTrackNumbers[album+artist].append(track)
+        else:
+          albumArtistTrackNumbers[album+artist] = [track]
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
-      #************************* check here to make sure we aren't adding an additional part (increment the track number somehow, maybe by 100)
       t.parts.append(f)
       mediaList.append(t)
       print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
@@ -68,11 +76,12 @@ def getInfoFromTag(filename, language):
           tag.TPE2 = None
         return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2)
       tag = ID3.ID3(filename)
-      try:
-        artist = tag.artist
+      try: artist = tag.artist
       except: artist = None
       try: album = tag.album
-      except: album = '-'
+      except: album = None
+      if (artist == None or len(artist) == 0) and (album == None or len(album) == 0):
+        raise #try mutagen
       try: title = tag.title
       except: title = None
       try: track = int(tag.track)
