@@ -9,14 +9,17 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 from mutagen.easymp4 import EasyMP4
 
+
+nextTrackNumber = {}
+albumArtistTrackNumbers = {}
+
 def Scan(path, files, mediaList, subdirs, language=None):
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
   if len(files) < 1: return
-  nextTrackNumber = {}
-  albumArtistTrackNumbers = {}
   for f in files:
     try:
+      artist = None
       (artist, album, title, track, disc, album_artist) = getInfoFromTag(f, language)
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
@@ -52,12 +55,16 @@ def Scan(path, files, mediaList, subdirs, language=None):
         track = nextTrackNumber[artist+album]
         nextTrackNumber[artist+album]+=1
       else: # let's make sure we aren't repeating a tracknumber
-        if albumArtistTrackNumbers.has_key(album+artist):
-          if track in albumArtistTrackNumbers[album+artist]:
-            track = track + 100
-            albumArtistTrackNumbers[album+artist].append(track)
-        else:
-          albumArtistTrackNumbers[album+artist] = [track]
+        if albumArtistTrackNumbers.has_key(artist+album):
+          if track in albumArtistTrackNumbers[artist+album]:
+            if max(albumArtistTrackNumbers[artist+album]) < 100:
+              track = track + 100
+            else:
+              track = max(albumArtistTrackNumbers[artist+album]) + 1
+      if albumArtistTrackNumbers.has_key(artist+album):
+        albumArtistTrackNumbers[artist+album].append(track)
+      else:
+        albumArtistTrackNumbers[artist+album] = [track]
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
       t.parts.append(f)
       mediaList.append(t)
@@ -92,7 +99,7 @@ def getInfoFromTag(filename, language):
     except:
       #try mutagen
       try: tag = EasyID3(filename)
-      except: return None
+      except: pass
       try: artist = tag['artist'][0].encode('utf-8')
       except: artist = None
       try: album = tag['album'][0].encode('utf-8')
