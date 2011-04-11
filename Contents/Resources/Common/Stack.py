@@ -8,7 +8,7 @@ def Scan(dir, files, mediaList, subdirs):
   
   # Go through the files and see if any of them need to be stacked.
   stack_dict = {}
-  stackDiffs = '1234abcd' # These are the characters we are looking for being different across stackable filenames
+  stackDiffs = '123456789abcdefghijklmn' # These are the characters we are looking for being different across stackable filenames
   stackSuffixes = ['cd', 'dvd', 'part', 'pt', 'disk', 'disc']
   
   # Sort the mediaList by filename, so we can do our compares properly
