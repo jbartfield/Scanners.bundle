@@ -2,7 +2,7 @@
 # Copyright (c) 2010 Plex Development Team. All rights reserved.
 #
 import re, os, os.path
-import Media, VideoFiles, Stack
+import Media, VideoFiles, Stack, Utils
 from mp4file import mp4file, atomsearch
 
 episode_regexps = [
@@ -43,7 +43,7 @@ def Scan(path, files, mediaList, subdirs):
   VideoFiles.Scan(path, files, mediaList, subdirs)
   
   # Take top two as show/season, but require at least the top one.
-  paths = path.split('/')
+  paths = Utils.SplitPath(path)
   
   if len(paths) == 1 and len(paths[0]) == 0:
   
