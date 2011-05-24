@@ -52,3 +52,8 @@ class Track(MediaRoot):
     
   def __repr__(self):
     return "%s (album: %s, track: %s) #%d => %s" % (self.artist, self.album, self.name, self.index, self.title)
+    
+class Photo(MediaRoot):
+  def __init__(self, title):
+    MediaRoot.__init__(self, 'Photo')
+    self.name = title
