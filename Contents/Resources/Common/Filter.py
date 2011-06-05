@@ -10,7 +10,9 @@ def Scan(path, files, mediaList, subdirs, exts):
 
   for i in files:
     # Use unicode for file operations.
-    filename = unicode(i.decode('utf-8'))
+    try: filename = unicode(i.decode('utf-8'))
+    except: files_to_whack.append(i)
+      
     (file, ext) = os.path.splitext(i)
     file = os.path.basename(file)
     

@@ -22,14 +22,15 @@ standalone_episode_regexs = [
   '(.*?)( \(([0-9]+)\))?[Ss]([0-9]+)+[Ee]([0-9]+)(-[0-9]+[Xx]([0-9]+))?( - (.*))?'   # standard s00e00
   ]
   
-season_regex = '(.*)[ \.\-_]([0-9]{4})?([Ss](eason)?)([0-9]+)(.*)' # folder for a season
+season_regex = '.*(?P<season>[0-9]+)$' # folder for a season
 
 just_episode_regexs = [
     '(?P<ep>[0-9]{1,3})[\. -_]of[\. -_]+[0-9]{1,3}',       # 01 of 08
-    '^(?P<ep>[0-9]{2,3})[^0-9]',                           # 01 - Foo
+    '^(?P<ep>[0-9]{1,3})[^0-9]',                           # 01 - Foo
     'e[a-z]*[ \.\-_]*(?P<ep>[0-9]{2,3})([^0-9c-uw-z%]|$)', # Blah Blah ep234
     '.*?[ \.\-_](?P<ep>[0-9]{2,3})[^0-9c-uw-z%]+',         # Flah - 04 - Blah
-    '.*?[ \.\-_](?P<ep>[0-9]{2,3})$'                       # Flah - 04
+    '.*?[ \.\-_](?P<ep>[0-9]{2,3})$',                      # Flah - 04
+    '.*?[^0-9x](?P<ep>[0-9]{2,3})$'                        # Flah707
   ]
 
 ends_with_number = '.*([0-9]{1,2})$'
@@ -104,22 +105,17 @@ def Scan(path, files, mediaList, subdirs):
       # Not a perfect standalone match, so get information from directories. (e.g. "Lost/Season 1/s0101.mkv")
       season = None
       seasonNumber = None
-      
-      if len(paths) == 1:
-        #let's check to see if this is a season dir
-        res = re.findall(season_regex,paths[0])
-        if len(res):
-          show, year, junk, junk, season, junk = res[0]
-        else:
-          show = paths[0]
-      else:
-        show, season = paths[0], paths[1]
-        m = re.match('s.*?([0-9]+)$', season, re.IGNORECASE)
-        if m:
-          seasonNumber = int(m.group(1))
 
-      oldShow = show
-      (show, year) = VideoFiles.CleanName(show)
+      (show, year) = VideoFiles.CleanName(paths[0])
+      
+      # Which component looks like season?
+      if len(paths) >= 2:
+        season = paths[len(paths)-1]
+        match = re.match(season_regex, season, re.IGNORECASE)
+        if match:
+          seasonNumber = int(match.group('season'))
+      
+      print "SEASON PATH:", season, "SEASON:", seasonNumber
 
       # Make sure an episode name didn't make it into the show.
       for rx in ends_with_episode:
@@ -211,7 +207,6 @@ def Scan(path, files, mediaList, subdirs):
             done = True
             break
 
-        
         if done == False:
 
           # Take the year out, because it's not going to help at this point.
@@ -251,13 +246,13 @@ def Scan(path, files, mediaList, subdirs):
                   break
                   
                 # Make sure this isn't absolute order.
+                print "PATH:", path, "FILE:", file, "SEASON:", seasonNumber, "the_season:", the_season
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
                     # Treat the whole thing as an episode.
                     episode = episode + the_season*100
                     if endEpisode is not None:
                       endEpisode = endEpisode + the_season*100
-                    the_season = int(m.group(1))
 
               for ep in range(episode, endEpisode+1):
                 tv_show = Media.Episode(show, the_season, ep, None, year)
@@ -280,6 +275,8 @@ def Scan(path, files, mediaList, subdirs):
             if episode_match is not None:
               the_episode = int(episode_match.group('ep'))
               the_season = 1
+              
+              print "MATCHED EPISODE:", the_episode, "in file:", file
           
               # Now look for a season.
               if seasonNumber is not None:
