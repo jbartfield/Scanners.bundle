@@ -115,8 +115,6 @@ def Scan(path, files, mediaList, subdirs):
         if match:
           seasonNumber = int(match.group('season'))
       
-      print "SEASON PATH:", season, "SEASON:", seasonNumber
-
       # Make sure an episode name didn't make it into the show.
       for rx in ends_with_episode:
         show = re.sub(rx, '', show)
@@ -246,7 +244,6 @@ def Scan(path, files, mediaList, subdirs):
                   break
                   
                 # Make sure this isn't absolute order.
-                print "PATH:", path, "FILE:", file, "SEASON:", seasonNumber, "the_season:", the_season
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
                     # Treat the whole thing as an episode.
