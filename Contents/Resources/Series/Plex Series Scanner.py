@@ -273,8 +273,6 @@ def Scan(path, files, mediaList, subdirs):
               the_episode = int(episode_match.group('ep'))
               the_season = 1
               
-              print "MATCHED EPISODE:", the_episode, "in file:", file
-          
               # Now look for a season.
               if seasonNumber is not None:
                 the_season = seasonNumber
