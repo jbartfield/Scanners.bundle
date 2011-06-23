@@ -243,6 +243,10 @@ def Scan(path, files, mediaList, subdirs):
                   done = True
                   break
                   
+                # Skip episode 0 on the weak regex since it's pretty much never right.
+                if the_season == 0:
+                  break
+                  
                 # Make sure this isn't absolute order.
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
@@ -261,6 +265,7 @@ def Scan(path, files, mediaList, subdirs):
               break
               
         if done == False:
+          
           # OK, next let's see if we're dealing with something that looks like an episode.
           # Begin by cleaning the filename to remove garbage like "h.264" that could throw
           # things off.
