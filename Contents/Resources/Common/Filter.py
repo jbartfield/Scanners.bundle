@@ -1,4 +1,4 @@
-import os, re, unicodedata
+import os, re
 
 IGNORE_DIRS = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*']
 ROOT_IGNORE_DIRS = ['\$Recycle.Bin', 'System Volume Information']
@@ -51,8 +51,3 @@ def Scan(path, files, mediaList, subdirs, exts):
   dirs_to_whack = list(set(dirs_to_whack))
   for i in dirs_to_whack:
     subdirs.remove(i)
-    
-  # Last, but not least, make sure we precompose all the directories.
-  for i in range(len(subdirs)):
-    try: subdirs[i] = unicodedata.normalize('NFKC', subdirs[i].decode('utf-8')).encode('utf-8')
-    except: pass
