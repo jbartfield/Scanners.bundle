@@ -68,9 +68,10 @@ def Scan(path, files, mediaList, subdirs, language=None):
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
       t.parts.append(f)
       mediaList.append(t)
-      print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
+      #print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
     except:
-      print "Skipping (Metadata tag issue): ", f
+      pass
+      #print "Skipping (Metadata tag issue): ", f
   return
         
 def getInfoFromTag(filename, language):
