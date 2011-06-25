@@ -9,7 +9,6 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 from mutagen.easymp4 import EasyMP4
 
-
 nextTrackNumber = {}
 albumArtistTrackNumbers = {}
 
@@ -20,7 +19,10 @@ def Scan(path, files, mediaList, subdirs, language=None):
   for f in files:
     try:
       artist = None
-      (artist, album, title, track, disc, album_artist) = getInfoFromTag(f, language)
+      (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
+      print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
+      if compil == '1':
+        artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
       if album == None or len(album.strip()) == 0:
@@ -75,13 +77,19 @@ def Scan(path, files, mediaList, subdirs, language=None):
         
 def getInfoFromTag(filename, language):
   "= (artist, album, title, track, disk, 'album-artist') for the song at filename.  Returns None if no valid tag is found"
+  compil = '0'
   if filename.lower().endswith("mp3"):
     try:
+      try:
+        tagMutagen = EasyID3(filename)
+        compil = tagMutagen['compilation'][0]
+      except:
+        pass
       tag = ID3v2.ID3v2(filename, language)
       if tag.isOK() and len(tag.artist) != 0 and len(tag.album) != 0:
-        if tag.TPE2 and tag.TPE2.lower() == tag.artist:
+        if tag.TPE2 and tag.TPE2.lower() == tag.artist.lower():
           tag.TPE2 = None
-        return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2)
+        return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2, compil)
       tag = ID3.ID3(filename)
       try: artist = tag.artist
       except: artist = None
@@ -95,11 +103,14 @@ def getInfoFromTag(filename, language):
       except: track = None
       try: disc = tag.disk
       except: disc = None
-      return (artist, album, title, track, disc, None)
+      return (artist, album, title, track, disc, None, compil)
     except:
       #try mutagen
-      try: tag = EasyID3(filename)
-      except: pass
+      if tagMutagen:
+        tag = tagMutagen
+      else:
+        try: tag = EasyID3(filename)
+        except: pass
       try: artist = tag['artist'][0].encode('utf-8')
       except: artist = None
       try: album = tag['album'][0].encode('utf-8')
@@ -115,7 +126,8 @@ def getInfoFromTag(filename, language):
       except: disc = None
       try: TPE2 = tag['performer'][0].encode('utf-8')
       except: TPE2 = None
-      return (artist, album, title, track, disc, TPE2)
+      return (artist, album, title, track, disc, TPE2, compil)
+    
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
     try: tag = EasyMP4(filename)
     except: return None
@@ -162,4 +174,4 @@ def getInfoFromTag(filename, language):
     except: track = None
     try: disc = int(tag['discnumber'][0])
     except: disc = None
-    return (artist, album, title, track, disc, None)
+    return (artist, album, title, track, disc, None, compil)
