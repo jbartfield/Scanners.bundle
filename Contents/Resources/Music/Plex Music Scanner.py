@@ -17,23 +17,11 @@ def Scan(path, files, mediaList, subdirs, language=None):
   AudioFiles.Scan(path, files, mediaList, subdirs)
   if len(files) < 1: return
   albumTracks = []
-  #lastDirname = None
   for f in files:
-    #try:
-      #print 'DIRNAME: ' + os.path.dirname(f)
-      #print 'LASTNAME: ' + str(lastDirname)
-      #if not lastDirname or os.path.dirname(f) != lastDirname:
-      #  print '!!!!!'
-      #  for t in albumTracks:
-      #    print t.artist
-      #    mediaList.append(t)
-      #  albumTracks = []
-      #else:
-      #  lastDirname = os.path.dirname(f)
-      
+    try:
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
-      print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
+      #print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
       if compil == '1':
         artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
@@ -83,15 +71,17 @@ def Scan(path, files, mediaList, subdirs, language=None):
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
       t.parts.append(f)
       albumTracks.append(t)
-      print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
-    #except:
-      print "Skipping (Metadata tag issue): ", f
-  #add all tracks in dir
+      #print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
+    except:
+      pass
+      #print "Skipping (Metadata tag issue): ", f
+  #add all tracks in dir, but first see if this might be a Various Artist album
   sameAlbum = True
   sameArtist = True
   prevAlbum = None
   prevArtist = None
   for t in albumTracks:
+    #print t.artist, t.album, t.album_artist
     if prevAlbum == None: prevAlbum = t.album
     if prevArtist == None: prevArtist = t.artist
     if prevAlbum != t.album: sameAlbum = False
@@ -101,7 +91,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
   if sameAlbum == True and sameArtist == False:
     for t in albumTracks:
       t.artist = 'Various Artists'
-  for t in albumTracks:  
+  for t in albumTracks:
     mediaList.append(t)
   return
         
@@ -157,7 +147,6 @@ def getInfoFromTag(filename, language):
       try: TPE2 = tag['performer'][0].encode('utf-8')
       except: TPE2 = None
       return (artist, album, title, track, disc, TPE2, compil)
-    
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
     try: tag = EasyMP4(filename)
     except: return None
