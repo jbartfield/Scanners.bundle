@@ -22,7 +22,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
       #print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
-      if compil == '1':
+      if compil == '1' or album_artist.lower() == 'various artists':
         artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
@@ -163,7 +163,9 @@ def getInfoFromTag(filename, language):
     except: track = None
     try: disc = int(tag['discnumber'][0])
     except: disc = None
-    try: TPE2 = tag['performer']
+    try: TPE2 = tag['performer'][0].encode('utf-8')
+    except: TPE2 = None
+    try: TPE2 = tag['albumartist'][0].encode('utf-8')
     except: TPE2 = None
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("flac"):
