@@ -22,7 +22,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
       #print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
-      if compil == '1' or album_artist.lower() == 'various artists':
+      if compil == '1' or (album_artist and album_artist.lower()) == 'various artists':
         album_artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
