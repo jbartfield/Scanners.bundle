@@ -16,8 +16,21 @@ def Scan(path, files, mediaList, subdirs, language=None):
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
   if len(files) < 1: return
+  albumTracks = []
+  #lastDirname = None
   for f in files:
-    try:
+    #try:
+      #print 'DIRNAME: ' + os.path.dirname(f)
+      #print 'LASTNAME: ' + str(lastDirname)
+      #if not lastDirname or os.path.dirname(f) != lastDirname:
+      #  print '!!!!!'
+      #  for t in albumTracks:
+      #    print t.artist
+      #    mediaList.append(t)
+      #  albumTracks = []
+      #else:
+      #  lastDirname = os.path.dirname(f)
+      
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
       print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
@@ -69,10 +82,27 @@ def Scan(path, files, mediaList, subdirs, language=None):
         albumArtistTrackNumbers[artist+album] = [track]
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
       t.parts.append(f)
-      mediaList.append(t)
+      albumTracks.append(t)
       print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
-    except:
+    #except:
       print "Skipping (Metadata tag issue): ", f
+  #add all tracks in dir
+  sameAlbum = True
+  sameArtist = True
+  prevAlbum = None
+  prevArtist = None
+  for t in albumTracks:
+    if prevAlbum == None: prevAlbum = t.album
+    if prevArtist == None: prevArtist = t.artist
+    if prevAlbum != t.album: sameAlbum = False
+    if prevArtist != t.artist: sameArtist = False
+    prevAlbum = t.album
+    prevArtist = t.artist
+  if sameAlbum == True and sameArtist == False:
+    for t in albumTracks:
+      t.artist = 'Various Artists'
+  for t in albumTracks:  
+    mediaList.append(t)
   return
         
 def getInfoFromTag(filename, language):
@@ -146,7 +176,7 @@ def getInfoFromTag(filename, language):
     except: disc = None
     try: TPE2 = tag['performer']
     except: TPE2 = None
-    return (artist, album, title, track, disc, TPE2)
+    return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("flac"):
     try: tag = FLAC(filename)
     except: return None
@@ -160,7 +190,7 @@ def getInfoFromTag(filename, language):
     except: track = None
     try: disc = int(tag['discnumber'][0])
     except: disc = None
-    return (artist, album, title, track, disc, None)
+    return (artist, album, title, track, disc, None, compil)
   elif filename.lower().endswith("ogg"):
     try: tag = OggVorbis(filename)
     except: return None
