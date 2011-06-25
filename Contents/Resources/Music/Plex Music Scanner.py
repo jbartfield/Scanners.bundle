@@ -23,7 +23,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
       #print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
       if compil == '1' or album_artist.lower() == 'various artists':
-        artist = 'Various Artists'
+        album_artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
       if album == None or len(album.strip()) == 0:
@@ -90,7 +90,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
     prevArtist = t.artist
   if sameAlbum == True and sameArtist == False:
     for t in albumTracks:
-      t.artist = 'Various Artists'
+      t.album_artist = 'Various Artists'
   for t in albumTracks:
     mediaList.append(t)
   return
