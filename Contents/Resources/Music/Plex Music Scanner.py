@@ -9,10 +9,11 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 from mutagen.easymp4 import EasyMP4
 
-nextTrackNumber = {}
-albumArtistTrackNumbers = {}
-
 def Scan(path, files, mediaList, subdirs, language=None):
+  
+  nextTrackNumber = {}
+  albumArtistTrackNumbers = {}
+  
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
   if len(files) < 1: return
