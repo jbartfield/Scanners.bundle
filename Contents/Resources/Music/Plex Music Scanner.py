@@ -84,8 +84,8 @@ def Scan(path, files, mediaList, subdirs, language=None):
     #print t.artist, t.album, t.album_artist
     if prevAlbum == None: prevAlbum = t.album
     if prevArtist == None: prevArtist = t.artist
-    if prevAlbum != t.album: sameAlbum = False
-    if prevArtist != t.artist: sameArtist = False
+    if prevAlbum.lower() != t.album.lower(): sameAlbum = False
+    if prevArtist.lower() != t.artist.lower(): sameArtist = False
     prevAlbum = t.album
     prevArtist = t.artist
   if sameAlbum == True and sameArtist == False:
