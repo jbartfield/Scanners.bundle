@@ -167,6 +167,9 @@ def getInfoFromTag(filename, language):
     except: TPE2 = None
     try: TPE2 = tag['albumartist'][0].encode('utf-8')
     except: TPE2 = None
+    try: 
+      if tag['compilation'] == True: compil = '1'
+    except: pass
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("flac"):
     try: tag = FLAC(filename)

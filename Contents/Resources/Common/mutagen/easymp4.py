@@ -202,6 +202,7 @@ for atomid, key in {
     'aART': 'albumartist',
     '\xa9day': 'date',
     '\xa9cmt': 'comment',
+    'cpil': 'compilation',
     'desc': 'description',
     '\xa9grp': 'grouping',
     '\xa9gen': 'genre',
