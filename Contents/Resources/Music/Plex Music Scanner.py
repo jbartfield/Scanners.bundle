@@ -49,9 +49,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
         elif str(track) == title[:2]: 
           title = title[2:]
           if title[0] in string.punctuation: title = title[1:]
+      (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
       if title.count('-') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
         (artist, title) = title.split('-')
         if len(artist) == 0: artist = '[Unknown Artist]'
+      elif parentDir and (artist == '[Unknown Artist]' or album == '[Unknown Album]'):  # see if we can parse the folder dir for artist - album
+        (pathArtist, pathAlbum) = parentDir.split('-')
+        if artist == '[Unknown Artist]': artist = pathArtist
+        if album == '[Unknown Album]': album = pathAlbum
       if track == None: # still None? make up a tracknumber to avoid a single track getting multiple parts
         if not nextTrackNumber.has_key(artist+album):
           nextTrackNumber[artist+album] = 200
