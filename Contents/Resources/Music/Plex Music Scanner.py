@@ -33,14 +33,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
       if track == None:
         #see if we have a tracknumber in the title
         if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
-          track = int(title[0:1])
+          track = int(title[0:2])
           title = title[3:]
         elif title[0] in string.digits and title[1] in (string.punctuation + string.whitespace): # 1 digit tracknumber?
           track = int(title[0])
           title = title[2:]
       else:
         # check to see if the tracknumber is in the title and remove it
-        if str(track) == title[0]: 
+        if str(track) == title[0]:
           title = title[1:]
           if title[0] in string.punctuation: title = title[1:]
         elif '0' + str(track) == title[:2]:
