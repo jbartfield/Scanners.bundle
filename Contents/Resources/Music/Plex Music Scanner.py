@@ -34,14 +34,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
       if track == None:
         #see if we have a tracknumber in the title
         if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
-          track = int(title[0:1])
+          track = int(title[0:2])
           title = title[3:]
         elif title[0] in string.digits and title[1] in (string.punctuation + string.whitespace): # 1 digit tracknumber?
           track = int(title[0])
           title = title[2:]
       else:
         # check to see if the tracknumber is in the title and remove it
-        if str(track) == title[0]: 
+        if str(track) == title[0]:
           title = title[1:]
           if title[0] in string.punctuation: title = title[1:]
         elif '0' + str(track) == title[:2]:
@@ -50,9 +50,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
         elif str(track) == title[:2]: 
           title = title[2:]
           if title[0] in string.punctuation: title = title[1:]
+      (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
       if title.count('-') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
         (artist, title) = title.split('-')
         if len(artist) == 0: artist = '[Unknown Artist]'
+      elif parentDir and (artist == '[Unknown Artist]' or album == '[Unknown Album]'):  # see if we can parse the folder dir for artist - album
+        (pathArtist, pathAlbum) = parentDir.split('-')
+        if artist == '[Unknown Artist]': artist = pathArtist
+        if album == '[Unknown Album]': album = pathAlbum
       if track == None: # still None? make up a tracknumber to avoid a single track getting multiple parts
         if not nextTrackNumber.has_key(artist+album):
           nextTrackNumber[artist+album] = 200
@@ -168,6 +173,9 @@ def getInfoFromTag(filename, language):
     except: TPE2 = None
     try: TPE2 = tag['albumartist'][0].encode('utf-8')
     except: TPE2 = None
+    try: 
+      if tag['compilation'] == True: compil = '1'
+    except: pass
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("flac"):
     try: tag = FLAC(filename)
