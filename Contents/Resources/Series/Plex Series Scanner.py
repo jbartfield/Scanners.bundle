@@ -243,6 +243,11 @@ def Scan(path, files, mediaList, subdirs):
                 # Make sure this isn't absolute order.
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
+                    # Something is amiss, see if it starts with an episode numbers.
+                    if re.search('^[0-9]+ -', file):
+                      # Let the episode matcher have it.
+                      break
+                    
                     # Treat the whole thing as an episode.
                     episode = episode + the_season*100
                     if endEpisode is not None:
