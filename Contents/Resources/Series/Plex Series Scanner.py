@@ -236,13 +236,6 @@ def Scan(path, files, mediaList, subdirs):
                   done = True
                   break
                   
-                # Skip season 19 and 20 for the weak regex because it ends up matching movie years
-                # or other years in the episode name.
-                #
-                if the_season == 19 or the_season == 20:
-                  done = True
-                  break
-                  
                 # Skip episode 0 on the weak regex since it's pretty much never right.
                 if the_season == 0:
                   break
