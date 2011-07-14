@@ -12,7 +12,6 @@ from mutagen.easymp4 import EasyMP4
 def Scan(path, files, mediaList, subdirs, language=None):
   
   nextTrackNumber = {}
-  albumArtistTrackNumbers = {}
   
   # Scan for audio files.
   AudioFiles.Scan(path, files, mediaList, subdirs)
@@ -58,22 +57,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
         (pathArtist, pathAlbum) = parentDir.split('-')
         if artist == '[Unknown Artist]': artist = pathArtist
         if album == '[Unknown Album]': album = pathAlbum
-      if track == None: # still None? make up a tracknumber to avoid a single track getting multiple parts
-        if not nextTrackNumber.has_key(artist+album):
-          nextTrackNumber[artist+album] = 200
-        track = nextTrackNumber[artist+album]
-        nextTrackNumber[artist+album]+=1
-      else: # let's make sure we aren't repeating a tracknumber
-        if albumArtistTrackNumbers.has_key(artist+album):
-          if track in albumArtistTrackNumbers[artist+album]:
-            if max(albumArtistTrackNumbers[artist+album]) < 100:
-              track = track + 100
-            else:
-              track = max(albumArtistTrackNumbers[artist+album]) + 1
-      if albumArtistTrackNumbers.has_key(artist+album):
-        albumArtistTrackNumbers[artist+album].append(track)
-      else:
-        albumArtistTrackNumbers[artist+album] = [track]
+
       t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
       t.parts.append(f)
       albumTracks.append(t)
