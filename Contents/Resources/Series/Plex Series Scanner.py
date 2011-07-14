@@ -22,7 +22,7 @@ standalone_episode_regexs = [
   '(.*?)( \(([0-9]+)\))?[Ss]([0-9]+)+[Ee]([0-9]+)(-[0-9]+[Xx]([0-9]+))?( - (.*))?'   # standard s00e00
   ]
   
-season_regex = '.*(?P<season>[0-9]+)$' # folder for a season
+season_regex = '.*?(?P<season>[0-9]+)$' # folder for a season
 
 just_episode_regexs = [
     '(?P<ep>[0-9]{1,3})[\. -_]of[\. -_]+[0-9]{1,3}',       # 01 of 08
@@ -236,13 +236,6 @@ def Scan(path, files, mediaList, subdirs):
                   done = True
                   break
                   
-                # Skip season 19 and 20 for the weak regex because it ends up matching movie years
-                # or other years in the episode name.
-                #
-                if the_season == 19 or the_season == 20:
-                  done = True
-                  break
-                  
                 # Skip episode 0 on the weak regex since it's pretty much never right.
                 if the_season == 0:
                   break
@@ -250,6 +243,11 @@ def Scan(path, files, mediaList, subdirs):
                 # Make sure this isn't absolute order.
                 if seasonNumber is not None:
                   if seasonNumber != the_season:
+                    # Something is amiss, see if it starts with an episode numbers.
+                    if re.search('^[0-9]+ -', file):
+                      # Let the episode matcher have it.
+                      break
+                    
                     # Treat the whole thing as an episode.
                     episode = episode + the_season*100
                     if endEpisode is not None:
