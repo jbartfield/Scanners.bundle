@@ -93,11 +93,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
       prevArtist = t.artist
       if t.album_artist and len(t.album_artist.strip()) > 0:
         blankAlbumArtist = False
+    
     if sameAlbum == True and sameArtist == False and blankAlbumArtist:
-      for t in albumTracks:
-        t.album_artist = 'Various Artists'
-    for t in albumTracks:
-      mediaList.append(t)
+      for tt in albumsDict[a]:
+        tt.album_artist = 'Various Artists'
+
+  for t in albumTracks:
+    mediaList.append(t)
+      
   return
 
 def tagGrabber(tagv2, tagv1, alt, tagName, language, tagNameAlt=None):
