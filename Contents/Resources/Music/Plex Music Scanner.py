@@ -9,8 +9,10 @@ from mutagen.oggvorbis import OggVorbis
 from mutagen.easyid3 import EasyID3
 from mutagen.easymp4 import EasyMP4
 
+various_artists = ['va', 'v/a', 'various', 'various artists', 'various artist(s)', 'various artitsen', 'verschiedene']
+langDecodeMap = {'ko': ['cp949','euc_kr']}
+
 def Scan(path, files, mediaList, subdirs, language=None):
-  
   nextTrackNumber = {}
   
   # Scan for audio files.
@@ -21,8 +23,8 @@ def Scan(path, files, mediaList, subdirs, language=None):
     try:
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
-      #print 'artist: ', artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
-      if compil == '1' or (album_artist and album_artist.lower()) == 'various artists':
+      #print 'artist: ', artist, 'album_artist: ', album_artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
+      if (compil == '1' and (album_artist is None or len(album_artist.strip()) == 0)) or (album_artist and album_artist.lower() in various_artists):
         album_artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
@@ -49,11 +51,13 @@ def Scan(path, files, mediaList, subdirs, language=None):
         elif str(track) == title[:2]: 
           title = title[2:]
           if title[0] in string.punctuation: title = title[1:]
+      title = title.strip()
+      if title[:1] == '-': title = title[1:]
       (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
-      if title.count('-') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
+      if title.count(' - ') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
         (artist, title) = title.split('-')
         if len(artist) == 0: artist = '[Unknown Artist]'
-      elif parentDir and (artist == '[Unknown Artist]' or album == '[Unknown Album]'):  # see if we can parse the folder dir for artist - album
+      elif parentDir and parentDir.count(' - ') == 1 and (artist == '[Unknown Artist]' or album == '[Unknown Album]'):  #see if we can parse the folder dir for artist - album
         (pathArtist, pathAlbum) = parentDir.split('-')
         if artist == '[Unknown Artist]': artist = pathArtist
         if album == '[Unknown Album]': album = pathAlbum
@@ -66,126 +70,148 @@ def Scan(path, files, mediaList, subdirs, language=None):
       pass
       #print "Skipping (Metadata tag issue): ", f
   #add all tracks in dir, but first see if this might be a Various Artist album
-  sameAlbum = True
-  sameArtist = True
-  prevAlbum = None
-  prevArtist = None
+  #first, let's group the albums in this folder together
+  albumsDict = {}
   for t in albumTracks:
-    #print t.artist, t.album, t.album_artist
-    if prevAlbum == None: prevAlbum = t.album
-    if prevArtist == None: prevArtist = t.artist
-    if prevAlbum.lower() != t.album.lower(): sameAlbum = False
-    if prevArtist.lower() != t.artist.lower(): sameArtist = False
-    prevAlbum = t.album
-    prevArtist = t.artist
-  if sameAlbum == True and sameArtist == False:
+    if albumsDict.has_key(t.album):
+      albumsDict[t.album].append(t)
+    else:
+      albumsDict[t.album] = [t]
+  #next, iterate through the album keys, and look at the tracks inside each album
+  for a in albumsDict.keys():
+    sameAlbum = True
+    sameArtist = True
+    prevAlbum = None
+    prevArtist = None
+    blankAlbumArtist = True
+    for t in albumsDict[a]:
+      if prevAlbum == None: prevAlbum = t.album
+      if prevArtist == None: prevArtist = t.artist
+      if prevAlbum.lower() != t.album.lower(): sameAlbum = False
+      if prevArtist.lower() != t.artist.lower(): sameArtist = False
+      prevAlbum = t.album
+      prevArtist = t.artist
+      if t.album_artist and len(t.album_artist.strip()) > 0:
+        blankAlbumArtist = False
+    if sameAlbum == True and sameArtist == False and blankAlbumArtist:
+      for t in albumTracks:
+        t.album_artist = 'Various Artists'
     for t in albumTracks:
-      t.album_artist = 'Various Artists'
-  for t in albumTracks:
-    mediaList.append(t)
+      mediaList.append(t)
   return
+
+def tagGrabber(tagv2, tagv1, alt, tagName, language, tagNameAlt=None):
+  #mutagen first
+  if tagNameAlt != None:
+    tagName = tagNameAlt
+  t = mutagenGrabber(alt, tagName, language)
+  try:
+    if t is None or len(t) == 0:
+      try: #then tagv2
+        t = tagv2.__dict__[tagName]
+      except: pass
+      try: #else, tagv1
+        if t is None or len(t) == 0:
+          try:
+            t = tagv1.__dict__[tagName]
+          except:
+            t = None
+      except: pass
+  except: pass
+  return t
+
+def mutagenGrabber(tag, tagName, language):
+  try:
+    t = tag[tagName][0]
+    if language in langDecodeMap.iterkeys():
+        for d in langDecodeMap[language]:
+          try:
+            t = t.encode('utf-8').decode(d).encode('utf-8')
+            break
+          except:
+            try:
+              t = t.encode('iso8859-1').decode(d).encode('utf-8')
+              break
+            except:
+              t = t.encode('utf-8')
+              pass
+    else:
+      try:
+        t = t.encode('utf-8')
+      except:
+        pass      
+  except:
+    t = None
+  return t
+
+def cleanTrackAndDisk(inVal):
+  try:
+    outVal = inVal.split('/')[0]
+    outVal = int(outVal)
+  except:
+    outVal = inVal
+  return outVal
         
 def getInfoFromTag(filename, language):
-  "= (artist, album, title, track, disk, 'album-artist') for the song at filename.  Returns None if no valid tag is found"
   compil = '0'
   if filename.lower().endswith("mp3"):
     try:
-      try:
-        tagMutagen = EasyID3(filename)
-        compil = tagMutagen['compilation'][0]
-      except:
-        pass
-      tag = ID3v2.ID3v2(filename, language)
-      if tag.isOK() and len(tag.artist) != 0 and len(tag.album) != 0:
-        if tag.TPE2 and tag.TPE2.lower() == tag.artist.lower():
-          tag.TPE2 = None
-        return (tag.artist, tag.album, tag.title, int(tag.track), tag.disk, tag.TPE2, compil)
-      tag = ID3.ID3(filename)
-      try: artist = tag.artist
-      except: artist = None
-      try: album = tag.album
-      except: album = None
-      if (artist == None or len(artist) == 0) and (album == None or len(album) == 0):
-        raise #try mutagen
-      try: title = tag.title
-      except: title = None
-      try: track = int(tag.track)
-      except: track = None
-      try: disc = tag.disk
-      except: disc = None
-      return (artist, album, title, track, disc, None, compil)
+      tagMutagen = EasyID3(filename)
+      compil = tagMutagen['compilation'][0]
     except:
-      #try mutagen
-      if tagMutagen:
-        tag = tagMutagen
-      else:
-        try: tag = EasyID3(filename)
-        except: pass
-      try: artist = tag['artist'][0].encode('utf-8')
-      except: artist = None
-      try: album = tag['album'][0].encode('utf-8')
-      except: album = None
-      try: title = tag['title'][0].encode('utf-8')
-      except: title = None
+      pass
+    tagv2 = ID3v2.ID3v2(filename, language)
+    tagv1 = ID3.ID3(filename)
+    if tagMutagen:
+      tagAlt = tagMutagen
+    else:
       try:
-        track = tag['tracknumber'][0]
-        track = track.split('/')[0]
-        track = int(track)
-      except: track = None
-      try: disc = int(tag['discnumber'][0])
-      except: disc = None
-      try: TPE2 = tag['performer'][0].encode('utf-8')
-      except: TPE2 = None
-      return (artist, album, title, track, disc, TPE2, compil)
+        tagAlt = EasyID3(filename)
+      except: 
+        tagAlt = None
+    artist = tagGrabber(tagv2, tagv1, tagAlt, 'artist', language)
+    album = tagGrabber(tagv2, tagv1, tagAlt, 'album', language)
+    title = tagGrabber(tagv2, tagv1, tagAlt, 'title', language)
+    track = cleanTrackAndDisk(tagGrabber(tagv2, tagv1, tagAlt, 'track', language, 'tracknumber'))
+    disc = cleanTrackAndDisk(tagGrabber(tagv2, tagv1, tagAlt, 'disk', language, 'discnumber'))
+    TPE2 = tagGrabber(tagv2, tagv1, tagAlt, 'performer', language)
+    if TPE2 is None or len(TPE2) == 0:
+      try:
+        TPE2 = tagv2.TPE2
+      except:
+        TPE2 = None
+    return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
     try: tag = EasyMP4(filename)
     except: return None
-    try: artist = tag['artist'][0].encode('utf-8')
-    except: artist = None
-    try: album = tag['album'][0].encode('utf-8')
-    except: album = None
-    try: title = tag['title'][0].encode('utf-8')
-    except: title = None
+    artist = mutagenGrabber(tag, 'artist', language)
+    album = mutagenGrabber(tag, 'album', language)
+    title = mutagenGrabber(tag, 'title', language)
+    track = cleanTrackAndDisk(mutagenGrabber(tag, 'tracknumber', language))
+    disc = cleanTrackAndDisk(mutagenGrabber(tag, 'discnumber', language))
+    TPE2 = mutagenGrabber(tag, 'performer')
+    #not sure on this: this was replacing TPE2 before --> TPE2 = tag['albumartist'][0].encode('utf-8')
     try:
-      track = tag['tracknumber'][0]
-      track = track.split('/')[0]
-      track = int(track)
-    except: track = None
-    try: disc = int(tag['discnumber'][0])
-    except: disc = None
-    try: TPE2 = tag['performer'][0].encode('utf-8')
-    except: TPE2 = None
-    try: TPE2 = tag['albumartist'][0].encode('utf-8')
-    except: TPE2 = None
-    try: 
       if tag['compilation'] == True: compil = '1'
     except: pass
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("flac"):
     try: tag = FLAC(filename)
     except: return None
-    try: artist = tag['artist'][0].encode('utf-8')
-    except: artist = None
-    try: album = tag['album'][0].encode('utf-8')
-    except: album = None
-    try: title = tag['title'][0].encode('utf-8')
-    except: title = None
-    try: track = int(tag['tracknumber'][0])
-    except: track = None
-    try: disc = int(tag['discnumber'][0])
-    except: disc = None
-    return (artist, album, title, track, disc, None, compil)
+    artist = mutagenGrabber(tag, 'artist', language)
+    album = mutagenGrabber(tag, 'album', language)
+    title = mutagenGrabber(tag, 'title', language)
+    track = cleanTrackAndDisk(mutagenGrabber(tag, 'tracknumber', language))
+    disc = cleanTrackAndDisk(mutagenGrabber(tag, 'discnumber', language))
+    TPE2 = mutagenGrabber(tag, 'performer', language)
+    return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("ogg"):
     try: tag = OggVorbis(filename)
     except: return None
-    try: artist = tag['artist'][0].encode('utf-8')
-    except: artist = None
-    try: album = tag['album'][0].encode('utf-8')
-    except: album = None
-    try: title = tag['title'][0].encode('utf-8')
-    except: title = None
-    try: track = int(tag['tracknumber'][0])
-    except: track = None
-    try: disc = int(tag['discnumber'][0])
-    except: disc = None
-    return (artist, album, title, track, disc, None, compil)
+    artist = mutagenGrabber(tag, 'artist', language)
+    album = mutagenGrabber(tag, 'album', language)
+    title = mutagenGrabber(tag, 'title', language)
+    track = cleanTrackAndDisk(mutagenGrabber(tag, 'tracknumber', language))
+    disc = cleanTrackAndDisk(mutagenGrabber(tag, 'discnumber', language))
+    TPE2 = mutagenGrabber(tag, 'performer', language)
+    return (artist, album, title, track, disc, TPE2, compil)
