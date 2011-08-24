@@ -22,7 +22,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
       #print 'artist: ', artist, 'album_artist: ', album_artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
-      if (compil == '1' and (album_artist is None or len(album_artist.strip()) == 0)) or (album_artist and album_artist.lower() in various_artists):
+      if album_artist and album_artist.lower() in various_artists: #(compil == '1' and (album_artist is None or len(album_artist.strip()) == 0)) or (
         album_artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
         artist = '[Unknown Artist]'
@@ -167,9 +167,12 @@ def getInfoFromTag(filename, language):
     track = cleanTrackAndDisk(mp3tagGrabber(tag, filename, 'track', language, 'tracknumber'))
     disc = cleanTrackAndDisk(mp3tagGrabber(tag, filename, 'disk', language, 'discnumber'))
     TPE2 = mp3tagGrabber(tag, filename, 'TPE2', language, 'performer')
-    try: compil = tag['compilation'][0]
-    except: pass
-    #print artist, album, title, track, disc, TPE2, compil
+    print tag
+    try: 
+      compil = tag['compilation'][0]
+    except: 
+      pass
+    print artist, album, title, track, disc, TPE2, compil
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
     try: tag = EasyMP4(filename)
