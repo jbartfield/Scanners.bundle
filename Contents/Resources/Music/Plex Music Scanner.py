@@ -10,7 +10,7 @@ from mutagen.easyid3 import EasyID3
 from mutagen.easymp4 import EasyMP4
 
 various_artists = ['va', 'v/a', 'various', 'various artists', 'various artist(s)', 'various artitsen', 'verschiedene']
-langDecodeMap = {'ko': ['cp949','euc_kr']}
+langDecodeMap = {'ko': ['euc_kr','cp949']}
 
 def Scan(path, files, mediaList, subdirs, language=None):
   # Scan for audio files.
