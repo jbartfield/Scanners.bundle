@@ -21,7 +21,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
     try:
       artist = None
       (artist, album, title, track, disc, album_artist, compil) = getInfoFromTag(f, language)
-      #print 'artist: ', artist, 'album_artist: ', album_artist, 'album: ', album, 'title: ', title, 'compilation: ' + str(compil)
+      #print 'artist: ', artist, ' | album_artist: ', album_artist, ' | album: ', album, ' | disc: ', str(disc), ' | title: ', title, ' | compilation: ' + str(compil)
       if album_artist and album_artist.lower() in various_artists: #(compil == '1' and (album_artist is None or len(album_artist.strip()) == 0)) or (
         album_artist = 'Various Artists'
       if artist == None or len(artist.strip()) == 0:
@@ -72,11 +72,21 @@ def Scan(path, files, mediaList, subdirs, language=None):
   #add all tracks in dir, but first see if this might be a Various Artist album
   #first, let's group the albums in this folder together
   albumsDict = {}
+  artistDict = {}
   for t in albumTracks:
-    if albumsDict.has_key(t.album):
-      albumsDict[t.album].append(t)
+    #add all the album names to a dictionary
+    if albumsDict.has_key(t.album.lower()):
+      albumsDict[t.album.lower()].append(t)
     else:
-      albumsDict[t.album] = [t]
+      albumsDict[t.album.lower()] = [t]
+    #count instances of same artist names
+    if artistDict.has_key(t.artist):
+      artistDict[t.artist] +=1 
+    else:
+      artistDict[t.artist] = 1
+  (maxArtistName, maxArtistCount) = sorted(artistDict.items(), key=lambda (k,v): (v,k))[-1]
+  percentSameArtist = float(maxArtistCount)/len(albumTracks)
+    
   #next, iterate through the album keys, and look at the tracks inside each album
   for a in albumsDict.keys():
     sameAlbum = True
@@ -94,9 +104,14 @@ def Scan(path, files, mediaList, subdirs, language=None):
       if t.album_artist and len(t.album_artist.strip()) > 0:
         blankAlbumArtist = False
     
+    
     if sameAlbum == True and sameArtist == False and blankAlbumArtist:
+      if percentSameArtist < .9: #if the number of the same artist is less than X%, let's VA it (else, let's use the most common artist)
+        newArtist = 'Various Artists'
+      else:
+        newArtist = maxArtistName
       for tt in albumsDict[a]:
-        tt.album_artist = 'Various Artists'
+        tt.album_artist = newArtist
         
   for t in albumTracks:
     mediaList.append(t)
