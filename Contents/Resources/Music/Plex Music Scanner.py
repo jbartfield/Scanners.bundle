@@ -59,14 +59,16 @@ def Scan(path, files, mediaList, subdirs, language=None):
         (pathArtist, pathAlbum) = parentDir.split('-')
         if artist == '[Unknown Artist]': artist = pathArtist
         if album == '[Unknown Album]': album = pathAlbum
-
-      t = Media.Track(artist.strip(), album.strip(), title.strip(), track, disc=disc, album_artist=album_artist)
+      
+      #make sure our last move is to encode to utf-8 before handing text back.
+      t = Media.Track(cleanPass(artist), cleanPass(album), cleanPass(title), track, disc=disc, album_artist=cleanPass(album_artist))
       t.parts.append(f)
       albumTracks.append(t)
       #print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
     except:
       pass
       #print "Skipping (Metadata tag issue): ", f
+  
   #add all tracks in dir, but first see if this might be a Various Artist album
   #first, let's group the albums in this folder together
   albumsDict = {}
@@ -95,11 +97,18 @@ def Scan(path, files, mediaList, subdirs, language=None):
     if sameAlbum == True and sameArtist == False and blankAlbumArtist:
       for tt in albumsDict[a]:
         tt.album_artist = 'Various Artists'
-
+        
   for t in albumTracks:
     mediaList.append(t)
-      
+  
   return
+
+def cleanPass(t):
+  try:
+    t = t.strip().encode('utf-8')
+  except:
+    pass
+  return t
 
 def mp3tagGrabber(tag, filename, tagName, language, tagNameAlt=None, force=False):
   #try mutagen first
@@ -112,13 +121,13 @@ def mp3tagGrabber(tag, filename, tagName, language, tagNameAlt=None, force=False
   if (t is None or len(t) == 0) and force == True:
     try: #then tagv2
       tagv2 = ID3v2.ID3v2(filename, language)
-      t = tagv2.__dict__[tagName]
+      t = tagv2.__dict__[tagName].decode('utf-8')
     except: pass
     try: #else, tagv1
       if t is None or len(t) == 0:
         try:
           tagv1 = ID3.ID3(filename)
-          t = tagv1.__dict__[tagName]
+          t = tagv1.__dict__[tagName].decode('utf-8')
         except:
           t = None
     except: pass
@@ -130,18 +139,18 @@ def mutagenGrabber(tag, tagName, language):
     if language in langDecodeMap.iterkeys():
       for d in langDecodeMap[language]:
         try:
-          t = t.encode('utf-8').decode(d).encode('utf-8')
+          t = t.encode('utf-8').decode(d)
           break
         except:
           try:
-            t = t.encode('iso8859-1').decode(d).encode('utf-8')
+            t = t.encode('iso8859-1').decode(d)
             break
           except:
-            t = t.encode('utf-8')
+            t = t.encode('utf-8').decode('utf-8')
             pass
     else:
       try:
-        t = t.encode('utf-8')
+        t = t.encode('utf-8').decode('utf-8')
       except:
         pass      
   except:
@@ -167,12 +176,11 @@ def getInfoFromTag(filename, language):
     track = cleanTrackAndDisk(mp3tagGrabber(tag, filename, 'track', language, 'tracknumber'))
     disc = cleanTrackAndDisk(mp3tagGrabber(tag, filename, 'disk', language, 'discnumber'))
     TPE2 = mp3tagGrabber(tag, filename, 'TPE2', language, 'performer')
-    print tag
     try: 
       compil = tag['compilation'][0]
     except: 
       pass
-    print artist, album, title, track, disc, TPE2, compil
+    #print artist, album, title, track, disc, TPE2, compil
     return (artist, album, title, track, disc, TPE2, compil)
   elif filename.lower().endswith("m4a") or filename.lower().endswith("m4b") or filename.lower().endswith("m4p"):
     try: tag = EasyMP4(filename)
