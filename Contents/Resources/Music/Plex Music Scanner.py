@@ -40,15 +40,12 @@ def Scan(path, files, mediaList, subdirs, language=None):
           title = title[2:]
       else:
         # check to see if the tracknumber is in the title and remove it
-        if str(track) == title[0]:
-          title = title[1:]
-          if title[0] in string.punctuation: title = title[1:]
-        elif '0' + str(track) == title[:2]:
+        if str(track) == str(title[0]) and str(title[1]) in (string.punctuation + string.whitespace):
           title = title[2:]
-          if title[0] in string.punctuation: title = title[1:]
-        elif str(track) == title[:2]: 
-          title = title[2:]
-          if title[0] in string.punctuation: title = title[1:]
+        elif '0' + str(track) == str(title[:2]) and str(title[2]) in (string.punctuation + string.whitespace):
+          title = title[3:]
+        elif str(track) == str(title[:2]) and str(title[2]) in (string.punctuation + string.whitespace): 
+          title = title[3:]
       title = title.strip()
       if title[:1] == '-': title = title[1:]
       (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
