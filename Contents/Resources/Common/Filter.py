@@ -1,6 +1,6 @@
 import os, re
 
-IGNORE_DIRS = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*', 'lost+found']
+IGNORE_DIRS = ['@eaDir', '.*_UNPACK_.*', '.*_FAILED_.*', '\..*', 'lost\+found']
 ROOT_IGNORE_DIRS = ['\$Recycle.Bin', 'System Volume Information']
 
 # Remove files and directories that don't make sense to scan.
