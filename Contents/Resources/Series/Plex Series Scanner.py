@@ -177,6 +177,9 @@ def Scan(path, files, mediaList, subdirs):
             # Year.
             try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
             except: pass
+            
+            if year and m4year == 0:
+              m4year = year
 
             # If we have all the data we need, add it.
             if len(m4show) > 0 and m4season > 0 and m4ep > 0:
@@ -211,7 +214,7 @@ def Scan(path, files, mediaList, subdirs):
           cleanName, cleanYear = VideoFiles.CleanName(file)
           if cleanYear != None:
             file = file.replace(str(cleanYear), 'XXXX')
-          
+            
           # Minor cleaning on the file to avoid false matches on H.264, 720p, etc.
           whackRx = ['([hHx][\.]?264)[^0-9]', '[^[0-9](720[pP])', '[^[0-9](1080[pP])', '[^[0-9](480[pP])']
           for rx in whackRx:
@@ -268,8 +271,12 @@ def Scan(path, files, mediaList, subdirs):
           # Begin by cleaning the filename to remove garbage like "h.264" that could throw
           # things off.
           #
-          (file, year) = VideoFiles.CleanName(file)
-          
+          (file, fileYear) = VideoFiles.CleanName(file)
+
+          # if don't have a good year from before (when checking the parent folders) AND we just got a good year, use it.
+          if not year and fileYear: 
+            year = fileYear
+
           for rx in just_episode_regexs:
             episode_match = re.search(rx, file, re.IGNORECASE)
             if episode_match is not None:
@@ -284,7 +291,7 @@ def Scan(path, files, mediaList, subdirs):
                 if the_episode >= 100 and int(the_episode / 100) == the_season:
                   the_episode = the_episode % 100
               
-              tv_show = Media.Episode(show, the_season, the_episode, None, None)
+              tv_show = Media.Episode(show, the_season, the_episode, None, year)
               tv_show.parts.append(i)
               mediaList.append(tv_show)
               done = True
