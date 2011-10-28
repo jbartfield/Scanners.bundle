@@ -32,12 +32,15 @@ def Scan(path, files, mediaList, subdirs, language=None):
         title = os.path.splitext(os.path.split(f)[1])[0]
       if track == None:
         #see if we have a tracknumber in the title
-        if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
-          track = int(title[0:2])
-          title = title[3:]
-        elif title[0] in string.digits and title[1] in (string.punctuation + string.whitespace): # 1 digit tracknumber?
-          track = int(title[0])
-          title = title[2:]
+        try:
+          if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
+            track = int(title[0:2])
+            title = title[3:]
+          elif title[0] in string.digits and title[1] in (string.punctuation + string.whitespace): # 1 digit tracknumber?
+            track = int(title[0])
+            title = title[2:]
+        except:
+          pass
       else:
         # check to see if the tracknumber is in the title and remove it
         if str(track) == str(title[0]) and str(title[1]) in (string.punctuation + string.whitespace):
@@ -50,10 +53,10 @@ def Scan(path, files, mediaList, subdirs, language=None):
       if title[:1] == '-': title = title[1:]
       (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
       if title.count(' - ') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
-        (artist, title) = title.split('-')
+        (artist, title) = title.split(' - ')
         if len(artist) == 0: artist = '[Unknown Artist]'
       elif parentDir and parentDir.count(' - ') == 1 and (artist == '[Unknown Artist]' or album == '[Unknown Album]'):  #see if we can parse the folder dir for artist - album
-        (pathArtist, pathAlbum) = parentDir.split('-')
+        (pathArtist, pathAlbum) = parentDir.split(' - ')
         if artist == '[Unknown Artist]': artist = pathArtist
         if album == '[Unknown Album]': album = pathAlbum
       
@@ -124,6 +127,7 @@ def cleanPass(t):
 
 def mp3tagGrabber(tag, filename, tagName, language, tagNameAlt=None, force=False):
   #try mutagen first
+  t = None
   if tagNameAlt != None: tagNameMut = tagNameAlt
   else: tagNameMut = tagName
   if tag != None:
@@ -140,8 +144,7 @@ def mp3tagGrabber(tag, filename, tagName, language, tagNameAlt=None, force=False
         try:
           tagv1 = ID3.ID3(filename)
           t = tagv1.__dict__[tagName].decode('utf-8')
-        except:
-          t = None
+        except: pass
     except: pass
   return t
 
@@ -179,9 +182,10 @@ def cleanTrackAndDisk(inVal):
         
 def getInfoFromTag(filename, language):
   compil = '0'
+  tag = None
   if filename.lower().endswith("mp3"):
     try: tag = EasyID3(filename)
-    except: tag = None
+    except: pass
     artist = mp3tagGrabber(tag, filename, 'artist', language, force=True)
     album = mp3tagGrabber(tag, filename, 'album', language, force=True)
     title = mp3tagGrabber(tag, filename, 'title', language, force=True)
