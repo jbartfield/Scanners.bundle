@@ -7,11 +7,19 @@ ROOT_IGNORE_DIRS = ['\$Recycle.Bin', 'System Volume Information']
 def Scan(path, files, mediaList, subdirs, exts):
 
   files_to_whack = []
+  use_unicode = os.path.supports_unicode_filenames
 
   for i in files:
-    # Use unicode for file operations.
-    try: filename = unicode(i.decode('utf-8'))
-    except: files_to_whack.append(i)
+    # Only use unicode if it's supported, which it is on Windows and OS X,
+    # but not Linux. This allows things to work with non-ASCII characters
+    # without having to go through a bunch of work to ensure the Linux 
+    # filesystem is UTF-8 "clean".
+    #
+    if use_unicode:
+      try: filename = unicode(i.decode('utf-8'))
+      except: files_to_whack.append(i)
+    else:
+      filename = i
       
     (file, ext) = os.path.splitext(i)
     file = os.path.basename(file)
