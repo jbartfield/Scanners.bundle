@@ -84,7 +84,10 @@ def Scan(path, files, mediaList, subdirs, language=None):
       artistDict[t.artist] +=1 
     else:
       artistDict[t.artist] = 1
-  (maxArtistName, maxArtistCount) = sorted(artistDict.items(), key=lambda (k,v): (v,k))[-1]
+      
+  try: (maxArtistName, maxArtistCount) = sorted(artistDict.items(), key=lambda (k,v): (v,k))[-1]
+  except: maxArtistCount = 0
+    
   percentSameArtist = float(maxArtistCount)/len(albumTracks)
     
   #next, iterate through the album keys, and look at the tracks inside each album
@@ -103,7 +106,6 @@ def Scan(path, files, mediaList, subdirs, language=None):
       prevArtist = t.artist
       if t.album_artist and len(t.album_artist.strip()) > 0:
         blankAlbumArtist = False
-    
     
     if sameAlbum == True and sameArtist == False and blankAlbumArtist:
       if percentSameArtist < .9: #if the number of the same artist is less than X%, let's VA it (else, let's use the most common artist)
