@@ -181,7 +181,9 @@ def cleanTrackAndDisk(inVal):
     outVal = inVal.split('/')[0]
     outVal = int(outVal)
   except:
-    outVal = inVal
+    try: outVal = int(inVal)
+    except: outVal = inVal
+
   return outVal
 
 def getWMAstring(WMAtag):
@@ -237,7 +239,6 @@ def getInfoFromTag(filename, language):
     track = cleanTrackAndDisk(mutagenGrabber(tag, 'WM/TrackNumber', language))
     disc = cleanTrackAndDisk(mutagenGrabber(tag, 'WM/PartOfSet', language))
     TPE2 = getWMAstring(mutagenGrabber(tag, 'WM/AlbumArtist', language))
-    #print artist, album, title, track, disc, TPE2, compil
     return (artist, album, title, track, disc, TPE2, compil)
   else: #unsupported filetype
     return (None, None, None, None, None, None, None)
