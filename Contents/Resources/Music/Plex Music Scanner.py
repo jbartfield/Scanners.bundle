@@ -31,27 +31,16 @@ def Scan(path, files, mediaList, subdirs, language=None):
         album = '[Unknown Album]'
       if title == None or len(title) == 0: #use the filename for the title
         title = os.path.splitext(os.path.split(f)[1])[0]
+
       if track == None:
-        #see if we have a tracknumber in the title
-        try:
-          if title[0] in string.digits and title[1] in string.digits and title[2] in (string.punctuation + string.whitespace): # 2 digit tracknumber?
-            track = int(title[0:2])
-            title = title[3:]
-          elif title[0] in string.digits and title[1] in (string.punctuation + string.whitespace): # 1 digit tracknumber?
-            track = int(title[0])
-            title = title[2:]
-        except:
-          pass
+        # See if we have a tracknumber in the title and strip it.
+        title = re.sub("^[0-9]{1,3}[ .-].+", '', title)
       else:
-        # check to see if the tracknumber is in the title and remove it
-        if str(track) == str(title[0]) and str(title[1]) in (string.punctuation + string.whitespace):
-          title = title[2:]
-        elif '0' + str(track) == str(title[:2]) and str(title[2]) in (string.punctuation + string.whitespace):
-          title = title[3:]
-        elif str(track) == str(title[:2]) and str(title[2]) in (string.punctuation + string.whitespace): 
-          title = title[3:]
-      title = title.strip()
-      if title[:1] == '-': title = title[1:]
+        # Check to see if the title starts with the track number and whack it.
+        title = re.sub("^[ 0]*%s[ ]+" % track, '', title)
+
+      title = title.strip(' -.')
+
       (allbutParentDir, parentDir) = os.path.split(os.path.dirname(f))
       if title.count(' - ') == 1 and artist == '[Unknown Artist]': # see if we can parse the title for artist - title
         (artist, title) = title.split(' - ')
@@ -65,10 +54,11 @@ def Scan(path, files, mediaList, subdirs, language=None):
       t = Media.Track(cleanPass(artist), cleanPass(album), cleanPass(title), track, disc=disc, album_artist=cleanPass(album_artist))
       t.parts.append(f)
       albumTracks.append(t)
-      #print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + str(album_artist) + '] [File: ' + f + ']'
+      #print 'Adding: [Artist: ' + artist + '] [Album: ' + album + '] [Title: ' + title + '] [Tracknumber: ' + str(track) + '] [Disk: ' + str(disc) + '] [Album Artist: ' + album_artist + '] [File: ' + f + ']'
     except:
       pass
       #print "Skipping (Metadata tag issue): ", f
+
   #add all tracks in dir, but first see if this might be a Various Artist album
   #first, let's group the albums in this folder together
   albumsDict = {}
