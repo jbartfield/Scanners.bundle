@@ -148,7 +148,7 @@ def mutagenGrabber(tag, tagName, language):
     if language in langDecodeMap.iterkeys():
       for d in langDecodeMap[language]:
         try:
-          t = t.encode('utf-8').decode(d)
+          t = t.decode(d).encode('utf-8')
           break
         except:
           try:
@@ -156,12 +156,9 @@ def mutagenGrabber(tag, tagName, language):
             break
           except:
             t = t.encode('utf-8').decode('utf-8')
-            pass
     else:
-      try:
-        t = t.encode('utf-8').decode('utf-8')
-      except:
-        pass      
+      try: t = t.encode('utf-8').decode('utf-8')
+      except: pass      
   except:
     t = None
   return t
