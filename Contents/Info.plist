@@ -17,7 +17,7 @@
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>PlexClientPlatforms</key>
-	<string>MacOSX,iOS,Android</string>
+	<string>*</string>
 	<key>PlexPluginClass</key>
 	<string>Resource</string>
 	<key>PlexPluginDebug</key>
