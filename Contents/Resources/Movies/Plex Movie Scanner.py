@@ -80,7 +80,7 @@ def Scan(path, files, mediaList, subdirs, language=None, **kwargs):
       # If it matches a TV show, don't scan it as a movie.
       tv = False
       for rx in SeriesScanner.episode_regexps[0:-1]:
-        if re.match(rx, name):
+        if re.match(rx, file):
           print "The file", file, "looked like a TV show so we're skipping it (", rx, ")"
           tv = True
           
