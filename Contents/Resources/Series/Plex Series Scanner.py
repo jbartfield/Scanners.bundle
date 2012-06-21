@@ -4,8 +4,7 @@
 import re, os, os.path
 import Media, VideoFiles, Stack, Utils
 from mp4file import mp4file, atomsearch
-from wtv_lame import WTV_Metadata
-from datetime import datetime
+from wtv import WTV_Metadata
 
 episode_regexps = [
     '(?P<show>.*?)[sS](?P<season>[0-9]+)[\._ ]*[eE](?P<ep>[0-9]+)([- ]?[Ee+](?P<secondEp>[0-9]+))?',                           # S03E04-E05
@@ -45,44 +44,37 @@ def Scan(path, files, mediaList, subdirs):
   VideoFiles.Scan(path, files, mediaList, subdirs)
   # Take top two as show/season, but require at least the top one.
   paths = Utils.SplitPath(path)
-  
   if len(paths) == 1 and len(paths[0]) == 0:
     for i in files:
       file = os.path.basename(i)
-      if file.lower().endswith("wtv"): # short-circuit and handle MCE .wtv files all special-like
-        tagDict = WTV_Metadata(i)
-        show = tagDict['Title']
-        origDate = tagDict['WM/MediaOriginalBroadcastDateTime']
-        released_at = datetime.strptime(origDate.replace('T',' ').replace('Z',''), '%Y-%m-%d %H:%M:%S').date()
-        year = int(released_at.year)
-        title = tagDict['WM/SubTitle']
-        month = released_at.month
-        day = released_at.day
-        tv_show = Media.Episode(show, year, None, None, None)
-        tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
-        tv_show.parts.append(i)
-        mediaList.append(tv_show)
-      else:
-        # Run the select regexps we allow at the top level.
-        for rx in episode_regexps[0:-1]:
-          match = re.search(rx, file, re.IGNORECASE)
-          if match:
-            # Extract data.
-            show = match.group('show')
-            season = int(match.group('season'))
-            episode = int(match.group('ep'))
-            endEpisode = episode
-            if match.groupdict().has_key('secondEp') and match.group('secondEp'):
-              endEpisode = int(match.group('secondEp'))
-          
-            # Clean title.
-            name, year = VideoFiles.CleanName(show)
-            if len(name) > 0:
-              for ep in range(episode, endEpisode+1):
-                tv_show = Media.Episode(name, season, ep, '', year)
-                tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
-                tv_show.parts.append(i)
-                mediaList.append(tv_show)
+      # Run the select regexps we allow at the top level.
+      for rx in episode_regexps[0:-1]:
+        match = re.search(rx, file, re.IGNORECASE)
+        if match:
+          # Extract data.
+          show = match.group('show')
+          season = int(match.group('season'))
+          episode = int(match.group('ep'))
+          endEpisode = episode
+          if match.groupdict().has_key('secondEp') and match.group('secondEp'):
+            endEpisode = int(match.group('secondEp'))
+          # Clean title.
+          name, year = VideoFiles.CleanName(show)
+          if len(name) > 0:
+            for ep in range(episode, endEpisode+1):
+              tv_show = Media.Episode(name, season, ep, '', year)
+              tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
+              tv_show.parts.append(i)
+              mediaList.append(tv_show)
+              continue
+      if file.lower().endswith("wtv"): # handle MCE .wtv files all special-like
+        wtv = WTV_Metadata(i)
+        if not 'Movies' in wtv.getGenres():
+          released_at = wtv.getOriginalBroadcastDateTime()
+          tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
+          tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
+          tv_show.parts.append(i)
+          mediaList.append(tv_show)
                 
   elif len(paths) > 0 and len(paths[0]) > 0:
     done = False
