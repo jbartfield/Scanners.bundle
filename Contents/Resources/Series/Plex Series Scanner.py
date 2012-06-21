@@ -68,13 +68,16 @@ def Scan(path, files, mediaList, subdirs):
               mediaList.append(tv_show)
               continue
       if file.lower().endswith("wtv"): # handle MCE .wtv files all special-like
-        wtv = WTV_Metadata(i)
-        if not 'Movies' in wtv.getGenres():
-          released_at = wtv.getOriginalBroadcastDateTime()
-          tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
-          tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
-          tv_show.parts.append(i)
-          mediaList.append(tv_show)
+        try:
+          wtv = WTV_Metadata(i)
+          if not 'Movies' in wtv.getGenres():
+            released_at = wtv.getOriginalBroadcastDateTime()
+            tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
+            tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
+            tv_show.parts.append(i)
+            mediaList.append(tv_show)
+        except:
+          pass
                 
   elif len(paths) > 0 and len(paths[0]) > 0:
     done = False
