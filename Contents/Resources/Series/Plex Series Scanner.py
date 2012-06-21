@@ -66,8 +66,7 @@ def Scan(path, files, mediaList, subdirs):
               tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
               tv_show.parts.append(i)
               mediaList.append(tv_show)
-              continue
-      if file.lower().endswith("wtv"): # handle MCE .wtv files all special-like
+      if file.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
         try:
           wtv = WTV_Metadata(i)
           if not 'Movies' in wtv.getGenres():
