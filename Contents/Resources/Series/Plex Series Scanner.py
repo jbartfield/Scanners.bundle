@@ -5,6 +5,7 @@ import re, os, os.path
 import Media, VideoFiles, Stack, Utils
 from mp4file import mp4file, atomsearch
 from wtv_lame import WTV_Metadata
+from datetime import datetime
 
 episode_regexps = [
     '(?P<show>.*?)[sS](?P<season>[0-9]+)[\._ ]*[eE](?P<ep>[0-9]+)([- ]?[Ee+](?P<secondEp>[0-9]+))?',                           # S03E04-E05
@@ -49,7 +50,12 @@ def Scan(path, files, mediaList, subdirs):
     for i in files:
       file = os.path.basename(i)
       if file.lower().endswith("wtv"): # short-circuit and handle MCE .wtv files all special-like
-        (show, year, title, released_at) = WTV_Metadata(i)
+        tagDict = WTV_Metadata(i)
+        show = tagDict['Title']
+        origDate = tagDict['WM/MediaOriginalBroadcastDateTime']
+        released_at = datetime.strptime(origDate.replace('T',' ').replace('Z',''), '%Y-%m-%d %H:%M:%S').date()
+        year = int(released_at.year)
+        title = tagDict['WM/SubTitle']
         month = released_at.month
         day = released_at.day
         tv_show = Media.Episode(show, year, None, None, None)
