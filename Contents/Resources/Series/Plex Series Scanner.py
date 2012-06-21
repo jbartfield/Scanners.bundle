@@ -46,6 +46,7 @@ def Scan(path, files, mediaList, subdirs):
   paths = Utils.SplitPath(path)
   if len(paths) == 1 and len(paths[0]) == 0:
     for i in files:
+      done = False
       file = os.path.basename(i)
       # Run the select regexps we allow at the top level.
       for rx in episode_regexps[0:-1]:
@@ -66,21 +67,14 @@ def Scan(path, files, mediaList, subdirs):
               tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
               tv_show.parts.append(i)
               mediaList.append(tv_show)
-      if file.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
-        try:
-          wtv = WTV_Metadata(i)
-          if not 'Movies' in wtv.getGenres():
-            released_at = wtv.getOriginalBroadcastDateTime()
-            tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
-            tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
-            tv_show.parts.append(i)
-            mediaList.append(tv_show)
-        except:
-          pass
+              done = True
+              
+      if done == False and file.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
+        if parseWTV(i, mediaList): continue
                 
   elif len(paths) > 0 and len(paths[0]) > 0:
     done = False
-        
+    
     # See if parent directory is a perfect match (e.g. a directory like "24 - 8x02 - Day 8_ 5_00P.M. - 6_00P.M")
     if len(files) == 1:
       for rx in standalone_episode_regexs:
@@ -103,10 +97,9 @@ def Scan(path, files, mediaList, subdirs):
             tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
             tv_show.parts.append(files[0])
             mediaList.append(tv_show)
-            
           done = True
           break
-          
+
     if done == False:
 
       # Not a perfect standalone match, so get information from directories. (e.g. "Lost/Season 1/s0101.mkv")
@@ -132,86 +125,26 @@ def Scan(path, files, mediaList, subdirs):
         (file, ext) = os.path.splitext(file)
         
         if ext.lower() in ['.mp4', '.m4v', '.mov']:
-          m4season = m4ep = m4year = 0
-          m4show = title = ''
-          try: 
-            mp4fileTags = mp4file.Mp4File(i)
-            
-            # Show.
-            try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow').encode('utf-8')
-            except: pass
-              
-            # Season.
-            try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
-            except: pass
-              
-            # Episode.
-            m4ep = None
-            try:
-              # tracknum (can be 101)
-              m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tracknum'))
-            except:
-              try:
-                # tvepisodenum (can be S2E16)
-                m4ep = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisodenum')
-              except:
-                # TV Episode (can be 101)
-                m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
-            
-            if m4ep is not None:
-              found = False
-              try:
-                # See if it matches regular expression.
-                for rx in episode_regexps[:-1]:
-                  match = re.search(rx, file, re.IGNORECASE)
-                  if match:
-                    m4season = int(match.group('season'))
-                    m4ep = int(match.group('ep'))
-                    found = True
-              
-                if found == False and re.match('[0-9]+', str(m4ep)):
-                  # Carefully convert to episode number.
-                  m4ep = int(m4ep) % 100
-                elif found == False:
-                  m4ep = int(re.findall('[0-9]+', m4ep)[0])
-              except:
-                pass
-
-            # Title.
-            try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title').encode('utf-8')
-            except: pass
-              
-            # Year.
-            try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
-            except: pass
-            
-            if year and m4year == 0:
-              m4year = year
-
-            # If we have all the data we need, add it.
-            if len(m4show) > 0 and m4season > 0 and m4ep > 0:
-              tv_show = Media.Episode(m4show, m4season, m4ep, title, m4year)
+          if parseMP4(i, mediaList): continue
+        
+        if done == False and i.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
+          if parseWTV(i, mediaList): continue
+         
+        # Check for date-based regexps first.
+        if done == False:
+          for rx in date_regexps:
+            match = re.search(rx, file)
+            if match:
+              year = int(match.group('year'))
+              month = int(match.group('month'))
+              day = int(match.group('day'))
+              # Use the year as the season.
+              tv_show = Media.Episode(show, year, None, None, None)
+              tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
               tv_show.parts.append(i)
               mediaList.append(tv_show)
-              continue
-
-          except:
-            pass
-        
-        # Check for date-based regexps first.
-        for rx in date_regexps:
-          match = re.search(rx, file)
-          if match:
-            year = int(match.group('year'))
-            month = int(match.group('month'))
-            day = int(match.group('day'))
-            # Use the year as the season.
-            tv_show = Media.Episode(show, year, None, None, None)
-            tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
-            tv_show.parts.append(i)
-            mediaList.append(tv_show)
-            done = True
-            break
+              done = True
+              break
 
         if done == False:
 
@@ -303,9 +236,88 @@ def Scan(path, files, mediaList, subdirs):
               break
         if done == False:
           print "Got nothing for:", file
-  
+
   # Stack the results.
   Stack.Scan(path, files, mediaList, subdirs)
+
+def parseWTV(file, mediaList):
+  try:
+    wtv = WTV_Metadata(file)
+    if not 'Movies' in wtv.getGenres():
+      released_at = wtv.getOriginalBroadcastDateTime()
+      tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
+      tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
+      tv_show.parts.append(file)
+      mediaList.append(tv_show)
+  except:
+    pass
+  return True
+  
+def parseMP4(file, mediaList):
+  m4season = m4ep = m4year = 0
+  m4show = title = ''
+  try: 
+    mp4fileTags = mp4file.Mp4File(file)
+    
+    # Show.
+    try: m4show = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvshow').encode('utf-8')
+    except: pass
+      
+    # Season.
+    try: m4season = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvseason'))
+    except: pass
+      
+    # Episode.
+    m4ep = None
+    try:
+      # tracknum (can be 101)
+      m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tracknum'))
+    except:
+      try:
+        # tvepisodenum (can be S2E16)
+        m4ep = find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisodenum')
+      except:
+        # TV Episode (can be 101)
+        m4ep = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/tvepisode'))
+    
+    if m4ep is not None:
+      found = False
+      try:
+        # See if it matches regular expression.
+        for rx in episode_regexps[:-1]:
+          match = re.search(rx, file, re.IGNORECASE)
+          if match:
+            m4season = int(match.group('season'))
+            m4ep = int(match.group('ep'))
+            found = True
+      
+        if found == False and re.match('[0-9]+', str(m4ep)):
+          # Carefully convert to episode number.
+          m4ep = int(m4ep) % 100
+        elif found == False:
+          m4ep = int(re.findall('[0-9]+', m4ep)[0])
+      except:
+        pass
+
+    # Title.
+    try: title = find_data(mp4fileTags, 'moov/udta/meta/ilst/title').encode('utf-8')
+    except: pass
+      
+    # Year.
+    try: m4year = int(find_data(mp4fileTags, 'moov/udta/meta/ilst/year')[:4])
+    except: pass
+    
+    if year and m4year == 0:
+      m4year = year
+
+    # If we have all the data we need, add it.
+    if len(m4show) > 0 and m4season > 0 and m4ep > 0:
+      tv_show = Media.Episode(m4show, m4season, m4ep, title, m4year)
+      tv_show.parts.append(file)
+      mediaList.append(tv_show)
+  except:
+    pass
+  return True
   
 def find_data(atom, name):
   child = atomsearch.find_path(atom, name)
