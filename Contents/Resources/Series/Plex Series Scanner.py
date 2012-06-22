@@ -46,8 +46,9 @@ def Scan(path, files, mediaList, subdirs):
   paths = Utils.SplitPath(path)
   if len(paths) == 1 and len(paths[0]) == 0:
     for i in files:
-      done = False
+      (file, ext) = os.path.splitext(file)
       file = os.path.basename(i)
+
       # Run the select regexps we allow at the top level.
       for rx in episode_regexps[0:-1]:
         match = re.search(rx, file, re.IGNORECASE)
@@ -67,10 +68,11 @@ def Scan(path, files, mediaList, subdirs):
               tv_show.display_offset = (ep-episode)*100/(endEpisode-episode+1)
               tv_show.parts.append(i)
               mediaList.append(tv_show)
-              done = True
+              continue
               
-      if done == False and file.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
-        if parseWTV(i, mediaList): continue
+      # Handle MCE .wtv files all special-like
+      if ext.lower() in ['.wtv']:
+        parseWTV(i, mediaList)
                 
   elif len(paths) > 0 and len(paths[0]) > 0:
     done = False
@@ -124,27 +126,28 @@ def Scan(path, files, mediaList, subdirs):
         file = os.path.basename(i)
         (file, ext) = os.path.splitext(file)
         
+        # Special MP4 handling.
         if ext.lower() in ['.mp4', '.m4v', '.mov']:
           if parseMP4(i, mediaList): continue
         
-        if done == False and i.lower().endswith(".wtv"): # handle MCE .wtv files all special-like
+        # Special WTV handling.
+        if ext.lower() in ['.wtv']:
           if parseWTV(i, mediaList): continue
          
         # Check for date-based regexps first.
-        if done == False:
-          for rx in date_regexps:
-            match = re.search(rx, file)
-            if match:
-              year = int(match.group('year'))
-              month = int(match.group('month'))
-              day = int(match.group('day'))
-              # Use the year as the season.
-              tv_show = Media.Episode(show, year, None, None, None)
-              tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
-              tv_show.parts.append(i)
-              mediaList.append(tv_show)
-              done = True
-              break
+        for rx in date_regexps:
+          match = re.search(rx, file)
+          if match:
+            year = int(match.group('year'))
+            month = int(match.group('month'))
+            day = int(match.group('day'))
+            # Use the year as the season.
+            tv_show = Media.Episode(show, year, None, None, None)
+            tv_show.released_at = '%d-%02d-%02d' % (year, month, day)
+            tv_show.parts.append(i)
+            mediaList.append(tv_show)
+            done = True
+            break
 
         if done == False:
 
@@ -249,9 +252,11 @@ def parseWTV(file, mediaList):
       tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
       tv_show.parts.append(file)
       mediaList.append(tv_show)
+      return True
   except:
     pass
-  return True
+    
+  return False
   
 def parseMP4(file, mediaList):
   m4season = m4ep = m4year = 0
@@ -315,9 +320,11 @@ def parseMP4(file, mediaList):
       tv_show = Media.Episode(m4show, m4season, m4ep, title, m4year)
       tv_show.parts.append(file)
       mediaList.append(tv_show)
+      return True
   except:
     pass
-  return True
+    
+  return False
   
 def find_data(atom, name):
   child = atomsearch.find_path(atom, name)
