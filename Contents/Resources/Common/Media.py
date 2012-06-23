@@ -34,6 +34,7 @@ class Episode(MediaRoot):
     self.episode = episode
     self.name = title
     self.year = year
+    self.episodic = True
     
   def __repr__(self):
     return "%s (season %s, episode: %s) => %s starting at %d" % (self.show, self.season, self.episode, self.parts, self.display_offset)
