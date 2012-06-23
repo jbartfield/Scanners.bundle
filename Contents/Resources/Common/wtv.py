@@ -34,3 +34,12 @@ class WTV_Metadata:
     
   def getGenres(self):
     return self.tagDict['WM/Genre'].split(';')
+  
+  def getStationName(self):
+    return self.tagDict['WM/MediaStationName']
+  
+  def getDescription(self):
+    return self.tagDict['WM/SubTitleDescription']
+  
+  def getContentRating(self):
+    return self.tagDict['WM/ParentalRating']
