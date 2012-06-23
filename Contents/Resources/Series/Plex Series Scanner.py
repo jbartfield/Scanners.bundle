@@ -46,7 +46,7 @@ def Scan(path, files, mediaList, subdirs):
   paths = Utils.SplitPath(path)
   if len(paths) == 1 and len(paths[0]) == 0:
     for i in files:
-      (file, ext) = os.path.splitext(file)
+      (file, ext) = os.path.splitext(i)
       file = os.path.basename(i)
 
       # Run the select regexps we allow at the top level.
