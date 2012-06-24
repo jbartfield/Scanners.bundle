@@ -69,11 +69,13 @@ def Scan(path, files, mediaList, subdirs):
               tv_show.parts.append(i)
               mediaList.append(tv_show)
               continue
-              
+                  
       # Handle MCE .wtv files all special-like
       if ext.lower() in ['.wtv']:
-        parseWTV(i, mediaList)
-                
+        wtvParseResult = parseWTV(i, mediaList)
+        if wtvParseResult == 'Add': continue
+        elif wtvParseResult == 'Skip': continue
+        
   elif len(paths) > 0 and len(paths[0]) > 0:
     done = False
     
@@ -132,7 +134,9 @@ def Scan(path, files, mediaList, subdirs):
         
         # Special WTV handling.
         if ext.lower() in ['.wtv']:
-          if parseWTV(i, mediaList): continue
+          wtvParseResult = parseWTV(i, mediaList)
+          if wtvParseResult == 'Add': continue
+          elif wtvParseResult == 'Skip': continue
          
         # Check for date-based regexps first.
         for rx in date_regexps:
@@ -207,7 +211,6 @@ def Scan(path, files, mediaList, subdirs):
               break
               
         if done == False:
-          
           # OK, next let's see if we're dealing with something that looks like an episode.
           # Begin by cleaning the filename to remove garbage like "h.264" that could throw
           # things off.
@@ -239,7 +242,7 @@ def Scan(path, files, mediaList, subdirs):
               break
         if done == False:
           print "Got nothing for:", file
-
+          
   # Stack the results.
   Stack.Scan(path, files, mediaList, subdirs)
 
@@ -250,11 +253,16 @@ def parseWTV(file, mediaList):
       released_at = wtv.getOriginalBroadcastDateTime()
       tv_show = Media.Episode(wtv.getTitle(), int(released_at.year), None, None, None)
       tv_show.released_at = '%d-%02d-%02d' % (released_at.year, released_at.month, released_at.day)
+      if 'Series' in wtv.getGenres():
+        tv_show.episodic = 'True'
+      else:
+        tv_show.episodic = 'False'
       tv_show.parts.append(file)
       mediaList.append(tv_show)
-      return True
-  except:
-    pass
+      return 'Add'
+    else:
+      return 'Skip'
+  except: pass
     
   return False
   
