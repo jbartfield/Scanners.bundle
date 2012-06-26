@@ -26,8 +26,6 @@ def Scan(path, files, mediaList, subdirs, language=None):
       # Track index, do a bit of extra work.
       index = int(track.getAttribute('index'))
       file = track.getAttribute('file').split('/')[-1]
-      print re.findall('[.\-]+[ ]*([0-9]{2})[ ]*[.\-]', file)
-      print re.findall('^([0-9]{2})[ .\-]', file)
       if index == 0:
         try: index = int(re.findall('[.\-]+[ ]*([0-9]{2})[ ]*[.\-]', file)[0])
         except: 
