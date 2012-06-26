@@ -262,8 +262,7 @@ def parseWTV(file, mediaList):
       return 'Add'
     else:
       return 'Skip'
-  except: pass
-    
+  except: pass  
   return False
   
 def parseMP4(file, mediaList):
