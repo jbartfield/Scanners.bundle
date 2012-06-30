@@ -8,7 +8,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
   if len(path) == 0:
     # Top level, albums.
     dom = minidom.parse(urllib.urlopen('http://127.0.0.1:32400/music/iTunes/Albums'))
-    for album in dom.getElementsByTagName('Album'):
+    for album in sorted(dom.getElementsByTagName('Album'), key=lambda album: album.getAttribute('artist').lower() + album.getAttribute('album').lower()):
       subdirs.append('/' + album.getAttribute('key'))
   else:
     # Tracks.
