@@ -40,7 +40,7 @@ def Scan(path, files, mediaList, subdirs, language=None):
                       album_artist = album_artist,
                       disc = int(track.getAttribute('disc')))
       if track.getAttribute('compilation') == '1': compilation_count = compilation_count + 1
-      t.parts.append(track.getAttribute('file'))
+      t.parts.append(urllib.unquote(track.getAttribute('file')).encode('utf-8'))
       mediaList.append(t)
     
     # If we're listed as a compilation, make sure all album artists are there and the same.
