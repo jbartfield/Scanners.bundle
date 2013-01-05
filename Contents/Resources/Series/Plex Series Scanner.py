@@ -257,6 +257,7 @@ def parseWTV(file, mediaList):
         tv_show.episodic = 'True'
       else:
         tv_show.episodic = 'False'
+      print tv_show.episodic
       tv_show.parts.append(file)
       mediaList.append(tv_show)
       return 'Add'

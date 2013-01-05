@@ -19,6 +19,10 @@ class WTV_Metadata:
         self.tagDict[z[0]] = z[1]
       else:
         continue
+    #print self.tagDict
+    print self.tagDict['Title']
+    print self.tagDict['WM/SubTitle']
+    print self.tagDict['WM/Genre']
         
   def getTitle(self):
     return self.tagDict['Title']
